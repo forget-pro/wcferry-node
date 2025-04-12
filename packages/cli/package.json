@@ -1,0 +1,32 @@
+{
+  "name": "@zippybee/wcf-cli",
+  "version": "1.0.42",
+  "description": "",
+  "bin": {
+    "zippy-wcf": "./dist/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env NODE_ENV=development rollup -c rollup.config.ts --configPlugin typescript  -w",
+    "build": "cross-env NODE_ENV=production rollup -c rollup.config.ts --configPlugin typescript "
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@zippybee/wechatcore": "workspace:^",
+    "chalk": "^4.1.2",
+    "commander": "^12.1.0",
+    "fastify": "^5.2.1"
+  },
+  "bugs": {
+    "url": "https://github.com/dr-forget/wcferry-node/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dr-forget/wcferry-node/tree/main/packages/cli"
+  }
+}
