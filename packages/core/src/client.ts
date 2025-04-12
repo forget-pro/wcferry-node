@@ -815,6 +815,7 @@ export class Wcferry {
     });
     const rsp = this.sendRequest(req);
     if (rsp.status !== 0) {
+      console.error('消息注册失败: %d', rsp.status);
       this.isMsgReceiving = false;
       return false;
     }
