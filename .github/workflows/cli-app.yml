@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write # 允许写入代码库内容
+  packages: write # 允许写入包
+  id-token: write # 允许写入 ID 令牌
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        run: npm i -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Read core version
+        id: get_version
+        run: |
+          $version = (Get-Content packages/core/package.json | ConvertFrom-Json).version
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Read Electron version
+        id: get_electron_version
+        run: |
+          $electronVersion = (Get-Content packages/cli-app/package.json | ConvertFrom-Json).devDependencies.electron
+          echo "electron_version=$electronVersion" >> $env:GITHUB_OUTPUT
+
+      - name: Read Electron productName
+        id: get_product_name
+        run: |
+          $productName = (Get-Content packages/cli-app/electron-builder.json5 | ConvertFrom-Json).productName
+          echo "product_name=$productName" >> $env:GITHUB_OUTPUT
+
+      - name: Build Electron app for Windows
+        run: |
+          cd packages/cli-app
+          pnpm install
+          pnpm run build:win
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.version }}
+          name: v${{ env.version }}
+          body: |
+            - 🚀 Electron 客户端已构建
+            - Release for version v${{ env.electron_version }}
+          files: |
+            release/${{ env.electron_version }}/${{ steps.get_product_name.outputs.product_name }}-Windows-${{ env.electron_version }}-Setup.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
