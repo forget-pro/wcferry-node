@@ -38,7 +38,7 @@
     "uninstallDisplayName": "${productName}",
     "createDesktopShortcut": true,
     "installerIcon": "build/icon.ico",
-    "uninstallerIcon": "build/icons.ico"
+    "uninstallerIcon": "build/iconico"
   },
   "linux": {
     "target": [
