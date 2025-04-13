@@ -64,6 +64,6 @@ jobs:
             - 🚀 Electron 客户端已构建
             - Release for version v${{ steps.get_electron_version.outputs.electron_version }}
           files: |
-            release/${{ steps.get_electron_version.outputs.electron_version }}/${{ steps.get_product_name.outputs.product_name }}-Windows-${{ steps.get_electron_version.outputs.electron_version }}-Setup.exe
+            packages/cli-app/release/${{ steps.get_electron_version.outputs.electron_version }}/${{ steps.get_product_name.outputs.product_name }}-Windows-${{ steps.get_electron_version.outputs.electron_version }}-Setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
