@@ -70,6 +70,9 @@ export function useHook(log: Log) {
         checkUpdate(true, data);
       }
     });
+    window.ipcRenderer.on('unhandledRejection', (_, data) => {
+      unshift(log.error(`发生错误:${data}`));
+    });
   };
 
   // WCF检测更新

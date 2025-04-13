@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import { createRequire } from 'node:module';
-import Fastify, { FastifyInstance, FastifyRequest } from 'fastify';
+import Fastify, { FastifyInstance } from 'fastify';
 import fs from 'fs';
 import path from 'path';
 import axios from 'axios';

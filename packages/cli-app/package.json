@@ -1,12 +1,13 @@
 {
   "name": "electron-vite-project",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build:win": "tsc && vite build && electron-builder --win",
     "build": "vue-tsc && vite build && electron-builder",
+    "electron:icons": "electron-icon-builder --input=./resources/logo.png --output=./resources/icons --flatten",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "@vitejs/plugin-vue": "^5.0.4",
     "electron": "^30.0.1",
     "electron-builder": "^24.13.3",
+    "electron-icon-builder": "^2.0.1",
     "tailwindcss": "^4.1.3",
     "typescript": "^5.2.2",
     "unplugin-auto-import": "^19.1.2",

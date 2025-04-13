@@ -1,9 +1,7 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
-import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { WCF } from './wcf';
 import path from 'node:path';
-const require = createRequire(import.meta.url);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -39,7 +37,7 @@ function createWindow() {
     height: 800,
     minWidth: 1800,
     minHeight: 800,
-    icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
@@ -107,11 +105,11 @@ app.on('activate', () => {
   }
 });
 
-process.on('uncaughtException', (error) => {
-  console.log(error, 72);
+process.on('uncaughtException', (error: any) => {
+  win?.webContents.send('unhandledRejection', error.message); // 发送到渲染进程
 });
 // 捕获未处理的 Promise 拒绝
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
   win?.webContents.send('unhandledRejection', reason); // 发送到渲染进程
   // 可以在此处添加自定义处理逻辑
 });

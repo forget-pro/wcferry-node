@@ -8,14 +8,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    DialogClose: typeof import('reka-ui')['DialogClose']
-    DialogContent: typeof import('reka-ui')['DialogContent']
-    DialogDescription: typeof import('reka-ui')['DialogDescription']
-    DialogOverlay: typeof import('reka-ui')['DialogOverlay']
-    DialogPortal: typeof import('reka-ui')['DialogPortal']
-    DialogRoot: typeof import('reka-ui')['DialogRoot']
-    DialogTitle: typeof import('reka-ui')['DialogTitle']
-    DialogTrigger: typeof import('reka-ui')['DialogTrigger']
     Loading: typeof import('./src/components/loading/loading.vue')['default']
     NButton: typeof import('naive-ui')['NButton']
     NCheckbox: typeof import('naive-ui')['NCheckbox']
@@ -26,7 +18,6 @@ declare module 'vue' {
     NInputNumber: typeof import('naive-ui')['NInputNumber']
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     NNotificationProvider: typeof import('naive-ui')['NNotificationProvider']
-    NSpin: typeof import('naive-ui')['NSpin']
     Virtualizer: typeof import('./src/components/wcf/virtualizer.vue')['default']
     Wcf: typeof import('./src/components/wcf/wcf.vue')['default']
   }
