@@ -35,7 +35,7 @@ jobs:
       - name: Read Electron version
         id: get_electron_version
         run: |
-          $electronVersion = (Get-Content packages/cli-app/package.json | ConvertFrom-Json).devDependencies.electron
+          $electronVersion = (Get-Content packages/cli-app/package.json | ConvertFrom-Json).version
           echo "electron_version=$electronVersion" >> $env:GITHUB_OUTPUT
 
       - name: Read Electron productName
