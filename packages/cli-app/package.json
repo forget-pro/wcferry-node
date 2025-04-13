@@ -7,7 +7,7 @@
     "dev": "vite",
     "build:win": "tsc && vite build && electron-builder --win",
     "build": "vue-tsc && vite build && electron-builder",
-    "electron:icons": "electron-icon-builder --input=./resources/logo.png --output=./resources/icons --flatten",
+    "electron:icons": "electron-icon-builder --input=public/logo.png --output=build --flatten",
     "preview": "vite preview"
   },
   "dependencies": {

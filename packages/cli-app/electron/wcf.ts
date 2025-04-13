@@ -230,7 +230,7 @@ export class WCF {
         this.sendLog(`WCF启动失败：${result}`, 'ERROR');
         return;
       }
-      this.sendLog('✅WCF启动成功', 'SUCCESS');
+      this.sendLog(`✅WCF启动成功:tcp://0.0.0.0:${this.wcfConfig.port}发起连接`, 'SUCCESS');
       this.checkWCFIsRun();
       return true;
     } catch (error: any) {

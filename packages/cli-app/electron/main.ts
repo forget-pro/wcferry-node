@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { WCF } from './wcf';
 import path from 'node:path';
@@ -80,6 +80,9 @@ function createWindow() {
   ipcMain.handle('wcf:closeWcf', wcf.closeWCF); //关闭WCF核心
   ipcMain.handle('wcf:startWCF', wcf.startWCF); //启动WCF核心
   ipcMain.handle('wcf:resetWcf', wcf.resetWCF); //重置WCF环境
+  ipcMain.handle('open:url', (_, url) => {
+    shell.openExternal(url); // 打开链接
+  });
   //
 }
 const menu = Menu.buildFromTemplate([]);

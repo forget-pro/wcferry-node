@@ -1,9 +1,22 @@
 <template>
 
   <div class="text-gray-800 p-4 mx-4 flex flex-col h-screen">
-    <div class="text-xl font-bold flex items-center justify-center">
-      <img src="https://up.shobee.cn/cdn-static/wcf-tool.png" class="w-12" alt="">
-      <span>WCF工具控制台</span>
+    <div class="text-xl font-bold flex items-center justify-between">
+      <div class="flex items-center">
+        <img src="https://up.shobee.cn/cdn-static/wcf-tool.png" class="w-12" alt="">
+        <span>WCF工具控制台</span>
+      </div>
+      <div class="flex items-center" @click="openGithub">
+        <div class="text-xs text-gray-600 cursor-pointer">
+          <i class="fa-brands fa-github text-sm"></i>
+          <span class="ml-1">项目地址</span>
+        </div>
+        <div class="text-xs text-gray-600 cursor-pointer ml-4">
+          <i class="fa-solid fa-user-nurse"></i>
+          <span class="ml-1">作者:Forget</span>
+        </div>
+      </div>
+
     </div>
     <div class="rounded-md bg-white mt-4 py-4 px-4">
       <button
@@ -157,6 +170,7 @@ const log = new Log();
 
 
 const dialog = useDialog()
+
 const { state, logs, registerEvent, saveProxyUrl, debugChange, updateWcf, saveHttpPort, message, unshift, saveWcfPort, appStartCheck, startWcfHttpServer } = useHook(log);
 
 const handleOperation = async (value: ButtonGroupItem) => {
@@ -232,6 +246,10 @@ const handleOperation = async (value: ButtonGroupItem) => {
 const HttpEvent = async (checked: boolean) => {
   startWcfHttpServer(checked)
 };
+
+const openGithub = () => {
+  window.ipcRenderer.invoke('open:url', 'https://github.com/dr-forget/wcferry-node')
+}
 
 onMounted(async () => {
 

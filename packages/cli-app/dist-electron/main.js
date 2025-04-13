@@ -10,7 +10,7 @@ var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
 var _schemas, _derefSchemas, _insertRefSymbol, _allowEqualDuplicates, _cloneSchemaWithoutRefs, _RefResolver_instances, parseSchemaRef_fn, addDerefSchema_fn, resolveRef_fn, insertSchemaBySchemaId_fn, insertSchemaByAnchor_fn, insertDerefSchemaBySchemaId_fn, insertDerefSchemaByAnchor_fn, _a;
-import { app, Menu, BrowserWindow, ipcMain } from "electron";
+import { app, Menu, BrowserWindow, ipcMain, shell } from "electron";
 import require$$0$a, { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import require$$0$3 from "node:events";
@@ -51238,7 +51238,7 @@ class WCF {
           this.sendLog(`WCF启动失败：${result}`, "ERROR");
           return;
         }
-        this.sendLog("✅WCF启动成功", "SUCCESS");
+        this.sendLog(`✅WCF启动成功:tcp://0.0.0.0:${this.wcfConfig.port}发起连接`, "SUCCESS");
         this.checkWCFIsRun();
         return true;
       } catch (error2) {
@@ -51510,6 +51510,9 @@ function createWindow() {
   ipcMain.handle("wcf:closeWcf", wcf.closeWCF);
   ipcMain.handle("wcf:startWCF", wcf.startWCF);
   ipcMain.handle("wcf:resetWcf", wcf.resetWCF);
+  ipcMain.handle("open:url", (_, url2) => {
+    shell.openExternal(url2);
+  });
 }
 const menu = Menu.buildFromTemplate([]);
 Menu.setApplicationMenu(menu);
