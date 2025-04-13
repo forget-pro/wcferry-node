@@ -53,12 +53,12 @@ jobs:
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ env.version }}
-          name: v${{ env.version }}
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: v${{ steps.get_version.outputs.version }}
           body: |
             - 🚀 Electron 客户端已构建
-            - Release for version v${{ env.electron_version }}
+            - Release for version v${{ steps.get_electron_version.outputs.electron_version }}
           files: |
-            release/${{ env.electron_version }}/${{ steps.get_product_name.outputs.product_name }}-Windows-${{ env.electron_version }}-Setup.exe
+            release/${{ steps.get_electron_version.outputs.electron_version }}/${{ steps.get_product_name.outputs.product_name }}-Windows-${{ steps.get_electron_version.outputs.electron_version }}-Setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
