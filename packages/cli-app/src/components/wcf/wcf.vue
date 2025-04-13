@@ -1,7 +1,7 @@
 <template>
 
   <div class="text-gray-800 p-4 mx-4 flex flex-col h-screen">
-    <div class="text-xl font-middle flex items-center justify-center">
+    <div class="text-xl font-bold flex items-center justify-center">
       <img src="https://up.shobee.cn/cdn-static/wcf-tool.png" class="w-12" alt="">
       <span>WCF工具控制台</span>
     </div>
