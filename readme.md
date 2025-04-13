@@ -1,11 +1,5 @@
 # WeChat Core SDK for Node.js ![npm version](https://img.shields.io/npm/v/@zippybee/wechatcore.svg)
 
-# WCF-CLI ![npm version](https://img.shields.io/npm/v/@zippybee/wcf-cli.svg)
-
-> 注意：
-
-2.0.x 版本与 2.1.x 版本有较大改动 底层 socket nng 部分重写 两版本并不兼容 请注意函数方法名：建议所有开发者 升级到最新版本
-
 ## 使用步骤
 
 ### 安装依赖
@@ -65,25 +59,11 @@ const off = client.listening((msg) => {
 
 ## 说明
 
-在 `service` 模式下，`Zippy-WCF` 仅注入 DLL，其他逻辑需要自行实现。
-
-可通过 `tcp://0.0.0.0:10086` 进行远程调用。
-
-**注意：** `service` 模式与本地模式互斥。
+详见[Readme 页面](https://github.com/dr-forget/wcferry-node/blob/main/packages/cli-app/README.md)
 
 ## 使用示例
 
-### 1. 代码方式启动 `service` 模式
-
 ```javascript
-const { Wcferry } = require('@zippybee/wechatcore');
-
-const client = new Wcferry({ port: 10086, service: true }); // 开启 service 模式
-
-client.start();
-
-// 启动成功后，可通过远程调用 WCF 服务
-
 // 示例代码
 const { Wcferry } = require('@zippybee/wechatcore');
 
@@ -99,72 +79,6 @@ console.log(isLogin, userinfo);
 const off = client.on((msg) => {
   console.log('收到消息:', msg.content);
 });
-```
-
-### 2. CLI 方式启动 `service` 模式
-
-```sh
-npm i @zippybee/wcf-cli -g
-```
-
-#### 启动 `WCF` 服务
-
-```sh
-zippy-wcf start -p 10086   # 启动 WCF 服务，-p 运行端口
-                         # -d WCF DLL 所在目录（可选）
-                         # -w 微信客户端文件目录（可选）
-                         # -f  前台运行 & http 控制
-```
-
-### 3. `-f` 参数（前台运行 & HTTP 控制）
-
-`-f` 参数会保持程序在前台运行，并开启一个 HTTP 服务用于控制 WCF 状态。
-
-当 `-f` 参数开启后，将新增以下 HTTP API：
-
-| API           | 说明                                                |
-| ------------- | --------------------------------------------------- |
-| `/start`      | 开启 WCF 服务                                       |
-| `/stop`       | 关闭 WCF 服务                                       |
-| `/force-stop` | 强制关闭微信相关进程，遇到报错可使用此 API 强制重启 |
-| `/restart`    | 重启 WCF 服务                                       |
-
-#### API 返回值说明
-
-| 返回值 | 说明         |
-| ------ | ------------ |
-| `-1`   | WCF 正在运行 |
-| `0`    | WCF 未运行   |
-| `1`    | 成功开启     |
-| `2`    | 重启成功     |
-| `3`    | 关闭成功     |
-
-示例启动命令：
-
-```sh
-zippy-wcf start -p 10086 -f   # 运行 WCF 并启动 HTTP 控制服务
-```
-
-### 4. 停止 `WCF` 服务
-
-```sh
-zippy-wcf stop   # 关闭 WCF 服务
-```
-
-#### 新增 `-p` 参数（指定关闭端口）
-
-```sh
-zippy-wcf stop -p 10086   # 关闭指定端口的 WCF 服务（默认 10086）
-```
-
-#### 新增 `-r` 参数（关闭后自动重启微信客户端）
-
-由于 CLI 本身无状态，该停止功能是直接干掉端口，可能导致微信进程退出。
-
-`-r` 参数可用于关闭 WCF 服务后自动重启微信客户端。
-
-```sh
-zippy-wcf stop -p 10086 -r   # 关闭 WCF 并自动重启微信客户端
 ```
 
 ## 项目工程

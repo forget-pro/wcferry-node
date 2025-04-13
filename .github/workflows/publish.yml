@@ -162,8 +162,8 @@ jobs:
         id: publish_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ env.package_version }}
-          name: v${{ env.package_version }}
+          tag_name: core-v${{ env.package_version }}
+          name: core v${{ env.package_version }}
           body: |
             - 🔄 Action自动发布版本 v${{ env.package_version }}
             - 📦 发布了 @dr-forget/wechatcore 到 GitHub Packages

@@ -50,16 +50,11 @@ jobs:
           pnpm install
           pnpm run build:win
 
-      - name: List build output
-        run: |
-          echo "Build output:"
-          ls -R
-
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          name: v${{ steps.get_version.outputs.version }}
+          tag_name: app-v${{ steps.get_version.outputs.version }}
+          name: App v${{ steps.get_version.outputs.version }}
           body: |
             - 🚀 Electron 客户端已构建
             - Release for version v${{ steps.get_electron_version.outputs.electron_version }}
