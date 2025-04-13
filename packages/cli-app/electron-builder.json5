@@ -26,7 +26,7 @@
         ]
       }
     ],
-    "icon": "resources/icon/icon.ico",
+    "icon": "./resources/icon/icon.ico",
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
   },
   "nsis": {
@@ -37,8 +37,8 @@
     "shortcutName": "${productName}",
     "uninstallDisplayName": "${productName}",
     "createDesktopShortcut": true,
-    "installerIcon": "resources/icons/icon.ico",
-    "uninstallerIcon": "resources/icons.ico"
+    "installerIcon": "./resources/icons/icon.ico",
+    "uninstallerIcon": "./resources/icons.ico"
   },
   "linux": {
     "target": [
