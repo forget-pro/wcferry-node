@@ -53,7 +53,7 @@ jobs:
       - name: List build output
         run: |
           echo "Build output:"
-          dir release /s /b
+          Get-ChildItem -Path release -Recurse
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
