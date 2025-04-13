@@ -50,6 +50,11 @@ jobs:
           pnpm install
           pnpm run build:win
 
+      - name: List build output
+        run: |
+          echo "Build output:"
+          dir release /s /b
+
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
