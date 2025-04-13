@@ -35,7 +35,7 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1200,
     height: 800,
-    minWidth: 1800,
+    minWidth: 1200,
     minHeight: 800,
     icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
     webPreferences: {
@@ -79,6 +79,7 @@ function createWindow() {
   ipcMain.handle('wcf:restartWcf', wcf.restartWCF); //重启WCF
   ipcMain.handle('wcf:closeWcf', wcf.closeWCF); //关闭WCF核心
   ipcMain.handle('wcf:startWCF', wcf.startWCF); //启动WCF核心
+  ipcMain.handle('wcf:resetWcf', wcf.resetWCF); //重置WCF环境
   //
 }
 const menu = Menu.buildFromTemplate([]);
@@ -109,8 +110,8 @@ process.on('uncaughtException', (error: any) => {
   win?.webContents.send('unhandledRejection', error.message); // 发送到渲染进程
 });
 // 捕获未处理的 Promise 拒绝
-process.on('unhandledRejection', (reason) => {
-  win?.webContents.send('unhandledRejection', reason); // 发送到渲染进程
+process.on('unhandledRejection', (reason: any) => {
+  win?.webContents.send('unhandledRejection', reason.message); // 发送到渲染进程
   // 可以在此处添加自定义处理逻辑
 });
 

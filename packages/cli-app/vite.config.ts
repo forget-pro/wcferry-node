@@ -40,4 +40,7 @@ export default defineConfig({
           : {},
     }),
   ],
+  optimizeDeps: {
+    include: ['node-cron', 'uuid'],
+  },
 });

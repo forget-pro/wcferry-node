@@ -62,7 +62,7 @@ export function useHook(log: Log) {
       state.wcfConfig = data;
     });
     window.ipcRenderer.on('wcf:startEvent', (_, data) => {
-      state.wcf_isRun = data.wcf;
+      state.wcf_isRun = data.wcf_run;
       state.http_isRun = data.http;
     });
     window.ipcRenderer.on('wcf:checkUpdateNotiy', (_, data) => {
@@ -132,7 +132,7 @@ export function useHook(log: Log) {
       const res = await window.ipcRenderer.invoke('wcf:downloadWCF');
       if (res) {
         unshift(log.info('WCF已准备就绪'));
-        startWcfHttpServer(true);
+        // startWcfHttpServer(true);
       }
     } else {
       const res = await window.ipcRenderer.invoke('wcf:chekWcfIsRun');
@@ -144,7 +144,7 @@ export function useHook(log: Log) {
         unshift(log.info(`当前端口已被占用:${state.wcfConfig.port}`));
       }
       checkUpdate(true);
-      !res.http && startWcfHttpServer(true);
+      // !res.http && startWcfHttpServer(true);
     }
   };
 
@@ -157,7 +157,7 @@ export function useHook(log: Log) {
     await window.ipcRenderer.invoke('wcf:updateConfig', {
       port: state.formData.wcfPort,
     });
-    unshift(log.success(`WCF端口已修改为:${state.formData.wcfPort}`));
+    unshift(log.success(`✅WCF端口已修改为:${state.formData.wcfPort}`));
     unshift(log.info('WCF即将开始重启....'));
     await window.ipcRenderer.invoke('wcf:restartWcf');
   };
@@ -171,7 +171,7 @@ export function useHook(log: Log) {
     await window.ipcRenderer.invoke('wcf:updateConfig', {
       httpPort: state.formData.httpProt,
     });
-    unshift(log.success(`HTTP端口已修改为:${state.formData.httpProt}`));
+    unshift(log.success(`✅HTTP端口已修改为:${state.formData.httpProt}`));
     unshift(log.info('HTTP即将开始重启....'));
     await window.ipcRenderer.invoke('wcf:closeWcfHttpServer');
     await window.ipcRenderer.invoke('wcf:startWcfHttpServer');
@@ -182,7 +182,7 @@ export function useHook(log: Log) {
     await window.ipcRenderer.invoke('wcf:updateConfig', {
       proxy_url: state.formData.proxyUrl,
     });
-    unshift(log.success(`代理地址已修改为:${state.formData.proxyUrl}`));
+    unshift(log.success(`✅代理地址已修改为:${state.formData.proxyUrl}`));
   };
 
   const debugChange = async (checked: boolean) => {
@@ -190,7 +190,7 @@ export function useHook(log: Log) {
     await window.ipcRenderer.invoke('wcf:updateConfig', {
       debug: checked,
     });
-    unshift(log.success(`WCF调试模式已修改为:${checked}`));
+    unshift(log.success(`✅WCF调试模式已修改为:${checked},下次启动生效`));
   };
 
   const updateWcf = async (froce: boolean = false) => {

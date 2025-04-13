@@ -38,19 +38,6 @@ function findProcessOnPort(port: number): number[] | null {
   }
 }
 
-function killProcess(pid: number) {
-  try {
-    if (process.platform === 'win32') {
-      execSync(`taskkill /PID ${pid} /F`);
-    } else {
-      process.kill(pid, 'SIGKILL');
-    }
-    console.log(`✅ WCF 进程 ${pid} 已被终止`);
-  } catch (error: any) {
-    console.error(`❌ 无法终止进程 ${pid}:`, error.message);
-  }
-}
-
 export function PortIsRun(port: number) {
   const pids = findProcessOnPort(port);
   if (pids && pids.length > 0) {
@@ -75,12 +62,3 @@ export function openWeChat() {
     console.error('❌ 无法唤醒微信:', (error as Error).message);
   }
 }
-
-export const KillPort = (port: number) => {
-  const pids = findProcessOnPort(port);
-  if (pids && pids.length > 0) {
-    pids.forEach((pid: any) => killProcess(pid));
-  } else {
-    console.log(`✅ 端口 ${port} 未被占用`);
-  }
-};

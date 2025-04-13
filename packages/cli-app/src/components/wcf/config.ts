@@ -1,6 +1,6 @@
 export interface ButtonGroupItem {
   name: string;
-  key: 'start' | 'update' | 'close' | 'setting' | 'restart';
+  key: 'start' | 'update' | 'close' | 'setting' | 'restart' | 'reset';
   icon: string;
   btn_background: string;
 }
@@ -28,6 +28,13 @@ export const buttonGrounp: ButtonGroupItem[] = [
     key: 'close',
     icon: 'fas fa-stop',
     btn_background: 'bg-red-600  hover:bg-red-700 focus:ring-red-500',
+  },
+
+  {
+    name: '重置环境',
+    key: 'reset',
+    icon: 'fas  fa-gear',
+    btn_background: 'bg-gray-500  hover:bg-gray-400 focus:ring-gray-400',
   },
   {
     name: '设置',

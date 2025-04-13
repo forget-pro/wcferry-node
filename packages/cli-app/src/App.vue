@@ -1,8 +1,12 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides">
+
     <n-notification-provider :max="1" placement="bottom-right">
       <n-message-provider>
-        <wcf></wcf>
+        <n-dialog-provider>
+          <wcf></wcf>
+
+        </n-dialog-provider>
       </n-message-provider>
     </n-notification-provider>
   </n-config-provider>

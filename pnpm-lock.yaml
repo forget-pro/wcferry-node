@@ -59,7 +59,7 @@ importers:
         version: 0.5.16
       axios:
         specifier: ^1.7.7
-        version: 1.8.4(debug@4.4.0)
+        version: 1.8.4
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
@@ -4403,6 +4403,14 @@ snapshots:
 
   aws4@1.13.2: {}
 
+  axios@1.8.4:
+    dependencies:
+      follow-redirects: 1.15.9
+      form-data: 4.0.2
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+
   axios@1.8.4(debug@4.4.0):
     dependencies:
       follow-redirects: 1.15.9(debug@4.4.0)
@@ -4522,7 +4530,7 @@ snapshots:
 
   centra@2.7.0:
     dependencies:
-      follow-redirects: 1.15.9(debug@4.4.0)
+      follow-redirects: 1.15.9
     transitivePeerDependencies:
       - debug
 
@@ -5063,6 +5071,8 @@ snapshots:
     dependencies:
       path-exists: 2.1.0
       pinkie-promise: 2.0.1
+
+  follow-redirects@1.15.9: {}
 
   follow-redirects@1.15.9(debug@4.4.0):
     optionalDependencies:

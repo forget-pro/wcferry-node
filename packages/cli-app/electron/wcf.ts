@@ -6,6 +6,7 @@ import path from 'path';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import AdmZip from 'adm-zip';
+import { execSync } from 'child_process';
 import { PortIsRun } from './tool';
 const require = createRequire(import.meta.url);
 const koffi = require('koffi');
@@ -129,16 +130,15 @@ export class WCF {
     let output: string = '';
     try {
       const result = await this.getWCFVersion();
-      this.sendLog(`获取WCF最新版本信息成功:${result?.version}`, 'SUCCESS');
+      this.sendLog(`✅获取WCF最新版本信息成功:${result?.version}`, 'SUCCESS');
       this.wcfConfig.version = result?.version || '';
       //   获取下载URL
       const proxyurl = this.wcfConfig.proxy_url ? this.wcfConfig.proxy_url + '/' : '';
       const repoUrl = proxyurl + result?.download_url || '';
-      this.sendLog(`获取WCF最新版本下载地址成功:${repoUrl}`, 'SUCCESS');
+      this.sendLog(`✅获取WCF最新版本下载地址成功:${repoUrl}`, 'SUCCESS');
       const filename = path.basename(repoUrl);
       output = path.join(this.Wcf_directory, filename);
       if (fs.existsSync(output)) {
-        console.log('文件存在 跳过下载');
         return await this.unzipFile(output);
       }
 
@@ -149,12 +149,11 @@ export class WCF {
         url: repoUrl,
         responseType: 'stream',
       });
-      console.log(download, 154);
 
       download.data.pipe(writer);
       return await new Promise((resolve, reject) => {
         writer.on('finish', async () => {
-          this.sendLog('WCF下载完成', 'SUCCESS');
+          this.sendLog('✅WCF下载完成', 'SUCCESS');
           this.writeConfig(this.wcfConfig);
           const res = await this.unzipFile(output);
           resolve(res);
@@ -178,7 +177,7 @@ export class WCF {
         zip.extractAllToAsync(dest, true, (err: any) => {
           if (err) reject(err);
           else {
-            this.sendLog('解压文件完成', 'SUCCESS');
+            this.sendLog('✅解压文件完成', 'SUCCESS');
             fs.unlinkSync(filePath); // 删除压缩包
             resolve(true);
           }
@@ -215,7 +214,7 @@ export class WCF {
     const dllPath = path.join(this.Wcf_directory, 'sdk.dll');
     const sdkDLL = koffi.load(dllPath);
     // 注册Dll方法
-    this.WxInitSDK = sdkDLL.func('WxInitSDK', 'bool', ['bool', 'int']);
+    this.WxInitSDK = sdkDLL.func('int WxInitSDK(bool, int)', 'stdcall');
     // 销毁Dll
     this.WxDestroySDK = sdkDLL.func('WxDestroySDK', 'void', []);
     return true;
@@ -231,7 +230,7 @@ export class WCF {
         this.sendLog(`WCF启动失败：${result}`, 'ERROR');
         return;
       }
-      this.sendLog('WCF启动成功', 'SUCCESS');
+      this.sendLog('✅WCF启动成功', 'SUCCESS');
       this.checkWCFIsRun();
       return true;
     } catch (error: any) {
@@ -293,11 +292,33 @@ export class WCF {
   public checkWCFIsRun = async () => {
     const params = {
       portOcc: PortIsRun(this.wcfConfig.port),
-      wcf_run: PortIsRun(this.wcfConfig.port) && this.WxInitSDK,
+      wcf_run: PortIsRun(this.wcfConfig.port) && Boolean(this.WxInitSDK),
       http: this.server && PortIsRun(this.wcfConfig.httpPort) ? true : false,
     };
     this.windown.webContents.send('wcf:startEvent', params);
     return params;
+  };
+  // 重置WCF环境
+  public resetWCF = async () => {
+    this.sendLog('开始重置WCF环境', 'INFO');
+    await this.KillPort(this.wcfConfig.port);
+    await this.KillPort(+this.wcfConfig.port + 1);
+  };
+  public KillPort = async (port: number) => {
+    try {
+      const pids = await this.getPidsByPort(port);
+      if (pids.length == 0) {
+        this.sendLog(`当前端口:${port}没有被占用`, 'INFO');
+        return;
+      }
+      this.sendLog(`成功检测${port}端口对应的PID:${pids},即将终止相关PID进程`, 'INFO');
+      pids.forEach((item) => {
+        const result = this.killProcessByPid(item);
+        this.sendLog(`${result.success ? '✅' : ''}${result.message}`, result.success ? 'SUCCESS' : 'ERROR');
+      });
+    } catch (error: any) {
+      this.sendLog(`重置WCF环境失败:${error.message}`, 'ERROR');
+    }
   };
 
   // 开启http服务
@@ -323,7 +344,7 @@ export class WCF {
       });
 
       await fastify.listen({ host: '0.0.0.0', port: this.wcfConfig.httpPort });
-      this.sendLog(`HTTP SERVER IS START:0.0.0.0:${this.wcfConfig.httpPort}`, 'SUCCESS');
+      this.sendLog(`✅ HTTP SERVER IS START:0.0.0.0:${this.wcfConfig.httpPort}`, 'SUCCESS');
       this.server = fastify;
       this.checkWCFIsRun();
     } catch (err: any) {
@@ -334,7 +355,7 @@ export class WCF {
   public closeWcfServer = async () => {
     if (this.server) {
       await this.server.close();
-      this.sendLog('Htt Server Is Close', 'INFO');
+      this.sendLog('Http Server Is Close', 'INFO');
     }
     this.checkWCFIsRun();
   };
@@ -351,5 +372,48 @@ export class WCF {
       job.stop();
     });
     this.scheduleJobs.length = 0;
+  };
+
+  // 检测端口对应的pid
+  public getPidsByPort = async (port: number) => {
+    try {
+      const output = execSync(`netstat -ano | findstr :${port}`, { encoding: 'utf-8' });
+      const lines = output.split('\n').filter((line) => line.includes(`:${port}`));
+      if (lines.length === 0) return [];
+
+      const pids = lines.map((line) => {
+        const pid = line.trim().split(/\s+/).pop();
+        return Number(pid);
+      });
+
+      return pids;
+    } catch {
+      return [];
+    }
+  };
+  public killProcessByPid = (pid: number) => {
+    try {
+      execSync(`taskkill /PID ${pid} /F`, { stdio: 'ignore' });
+      return { success: true, message: `✅ 成功终止 PID ${pid} 的进程` };
+    } catch (err: any) {
+      return { success: false, message: `❌ 无法终止 PID ${pid}，可能不存在或已退出,请打开任务管理器核对` };
+    }
+  };
+
+  // 唤醒微信
+  public wakeUpWeChat = () => {
+    try {
+      if (process.platform === 'win32') {
+        execSync('start weixin://');
+      } else if (process.platform === 'darwin') {
+        open('open weixin://');
+      } else {
+        this.sendLog('❌ 当前系统不支持微信协议唤醒', 'ERROR');
+        return;
+      }
+      console.log('✅ 微信客户端已唤醒');
+    } catch (error) {
+      this.sendLog(`❌ 无法唤醒微信:${(error as Error).message}`, 'ERROR');
+    }
   };
 }

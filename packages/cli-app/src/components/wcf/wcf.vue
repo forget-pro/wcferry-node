@@ -88,13 +88,6 @@
             </div>
           </template>
         </virtualizer>
-
-
-        <!-- <div v-for="(item, i) in state.logs" :key="i">
-          <span class="text-gray-400 mr-2">[ {{ item.timestamp }} ]</span>
-          <span class="text-yellow-600">[ {{ item.level }} ]</span>
-          <span class="text-12 ml-2 leading-5">{{ item.message }}</span>
-        </div> -->
       </div>
     </div>
     <n-drawer v-model:show="state.active" :width="502" close-on-esc placement="right">
@@ -154,6 +147,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { useDialog } from 'naive-ui';
 import { buttonGrounp, ButtonGroupItem } from './config';
 import { Log } from './log';
 import { useHook } from './hook';
@@ -162,7 +156,7 @@ import virtualizer from './virtualizer.vue';
 const log = new Log();
 
 
-
+const dialog = useDialog()
 const { state, logs, registerEvent, saveProxyUrl, debugChange, updateWcf, saveHttpPort, message, unshift, saveWcfPort, appStartCheck, startWcfHttpServer } = useHook(log);
 
 const handleOperation = async (value: ButtonGroupItem) => {
@@ -196,6 +190,21 @@ const handleOperation = async (value: ButtonGroupItem) => {
     close: async () => {
       unshift(log.info('WCF即将停止服务...'));
       await window.ipcRenderer.invoke('wcf:closeWcf');
+    },
+    reset: () => {
+      dialog.warning({
+        title: '重置WCF',
+        content: '重置WCF会直接KILL掉WCF端口，会导致微信退出进程，重新唤醒微信，是否继续？',
+        positiveText: '确定',
+        negativeText: '取消',
+        draggable: true,
+        onPositiveClick: async () => {
+          unshift(log.info('WCF即将重置服务...'));
+          await window.ipcRenderer.invoke('wcf:resetWcf');
+          unshift(log.warn('程序重置完成,请尝试重新启动WCF，如果无法启动请尝试重启程序，请打开任务管理器查看是否有WCF进程未关闭'));
+        },
+      })
+
     },
     setting: () => {
       state.formData = {
