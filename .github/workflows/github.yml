@@ -38,6 +38,11 @@ jobs:
         run: |
           echo "latest_release=${{ env.latest_release }}"
           echo "local_version=${{ env.local_version }}"
+          if[ -z "${{ env.latest_release }}" ]; then
+            echo "No latest release found. Skipping version comparison."
+            echo "new_version=false" >> $GITHUB_ENV
+            exit 0
+          fi
           if [ "${{ env.latest_release }}" != "${{ env.local_version }}" ]; then
             echo "Versions are different, new version available."
             echo "new_version=true" >> $GITHUB_ENV
