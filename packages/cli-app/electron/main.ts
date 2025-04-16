@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, shell, globalShortcut } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { WCF } from './wcf';
 import path from 'node:path';
@@ -83,7 +83,10 @@ function createWindow() {
   ipcMain.handle('open:url', (_, url) => {
     shell.openExternal(url); // 打开链接
   });
-  //
+  //注册快捷键
+  globalShortcut.register('CommandOrControl+Shift+I', () => {
+    win?.webContents.toggleDevTools();
+  });
 }
 const menu = Menu.buildFromTemplate([]);
 Menu.setApplicationMenu(menu);
