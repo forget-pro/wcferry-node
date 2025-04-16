@@ -38,7 +38,7 @@ jobs:
           pnpm install
           pnpm version patch
           pnpm version patch
-          pnpm run build:win`
+          pnpm run build:win
 
       - name: Get Electron version
         id: get_electron_version
