@@ -2,7 +2,6 @@ import { Log, useLog } from './log';
 import { useNotification, NButton, useMessage } from 'naive-ui';
 import { reactive, h } from 'vue';
 import dayjs from 'dayjs';
-import { download } from 'naive-ui/es/_utils';
 interface WCFConfig {
   port: number;
   debug: boolean;
