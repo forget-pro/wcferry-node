@@ -160,8 +160,8 @@ jobs:
       - name: Tag the commit with release version
         if: env.new_version == 'true'
         run: |
-          git tag ${{ env.package_version }}  # 为提交添加 release 版本标签
-          git push origin ${{ env.package_version }}  # 推送标签到远程
+          git tag core-v${{ env.package_version }}  # 为提交添加 release 版本标签
+          git push origin core-v${{ env.package_version }}  # 推送标签到远程
 
       # 18. 发布 Release
       - name: Publish Release

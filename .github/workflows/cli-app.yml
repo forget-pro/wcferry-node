@@ -26,12 +26,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Read Electron version
-        id: get_electron_version
-        run: |
-          $electronVersion = (Get-Content packages/cli-app/package.json | ConvertFrom-Json).version
-          echo "electron_version=$electronVersion" >> $env:GITHUB_OUTPUT
-
       - name: Read Electron productName
         id: get_product_name
         run: |
@@ -42,7 +36,28 @@ jobs:
         run: |
           cd packages/cli-app
           pnpm install
+          pnpm version patch
+          pnpm version patch
           pnpm run build:win`
+
+      - name: Get Electron version
+        id: get_electron_version
+        run: |
+          $electronVersion = (Get-Content packages/cli-app/package.json | ConvertFrom-Json).version
+           echo "electron_version=$electronVersion" >> $env:GITHUB_OUTPUT
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: update version to ${{ steps.get_electron_version.outputs.electron_version }}"  # 提交更新
+          git push
+
+      - name: Tag the commit with release version
+        run: |
+          git tag app-v${{ steps.get_electron_version.outputs.electron_version }}  # 为提交添加 release 版本标签
+          git push origin app-v${{ steps.get_electron_version.outputs.electron_version }}  # 推送标签到远程
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
