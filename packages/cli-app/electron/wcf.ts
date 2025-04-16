@@ -124,42 +124,54 @@ export class WCF {
     }
   };
 
-  //   下载最新版的WCF
-  public downloadWCF = async () => {
-    this.sendLog('开始下载最新版本的WCF', 'INFO');
-    let output: string = '';
+  public downloadFile = async (url: string, dest: string) => {
     try {
-      const result = await this.getWCFVersion();
-      this.sendLog(`✅获取WCF最新版本信息成功:${result?.version}`, 'SUCCESS');
-      this.wcfConfig.version = result?.version || '';
-      //   获取下载URL
       const proxyurl = this.wcfConfig.proxy_url ? this.wcfConfig.proxy_url + '/' : '';
-      const repoUrl = proxyurl + result?.download_url || '';
-      this.sendLog(`✅获取WCF最新版本下载地址成功:${repoUrl}`, 'SUCCESS');
-      const filename = path.basename(repoUrl);
-      output = path.join(this.Wcf_directory, filename);
-      if (fs.existsSync(output)) {
-        return await this.unzipFile(output);
-      }
-
-      const writer = fs.createWriteStream(output);
-
+      const down_url = proxyurl + url;
+      this.sendLog(`开始下载文件:${down_url}`, 'INFO');
+      const writer = fs.createWriteStream(dest);
       const download = await axios({
         method: 'get',
-        url: repoUrl,
+        url: down_url,
         responseType: 'stream',
       });
 
       download.data.pipe(writer);
       return await new Promise((resolve, reject) => {
         writer.on('finish', async () => {
-          this.sendLog('✅WCF下载完成', 'SUCCESS');
-          this.writeConfig(this.wcfConfig);
-          const res = await this.unzipFile(output);
-          resolve(res);
+          this.sendLog('下载完成', 'SUCCESS');
+          resolve(true);
         });
         writer.on('error', reject);
       });
+    } catch (error: any) {
+      this.sendLog(`下载失败:${error.message},url:${url}`, 'ERROR');
+      return false;
+    }
+  };
+
+  //   下载最新版的WCF
+  public downloadWCF = async () => {
+    this.sendLog('开始下载最新版本的WCF', 'INFO');
+    let output: string = '';
+    try {
+      const result = await this.getWCFVersion();
+      this.sendLog(`✅ 获取WCF最新版本信息成功:${result?.version}`, 'SUCCESS');
+      this.wcfConfig.version = result?.version || '';
+      //   获取下载URL
+      const filename = path.basename(result?.download_url);
+      output = path.join(this.Wcf_directory, filename);
+      if (fs.existsSync(output)) {
+        return await this.unzipFile(output);
+      }
+      const res = await this.downloadFile(result?.download_url, output);
+      if (!res) return res;
+      const unCompress = await this.unzipFile(output);
+      if (unCompress) {
+        this.wcfConfig.version = result?.version || '';
+        this.writeConfig(this.wcfConfig);
+        this.reportConfig();
+      }
     } catch (error: any) {
       this.sendLog(`下载WCF失败:${error.message}`, 'ERROR');
       fs.unlinkSync(output); // 删除下载的文件
@@ -177,7 +189,7 @@ export class WCF {
         zip.extractAllToAsync(dest, true, (err: any) => {
           if (err) reject(err);
           else {
-            this.sendLog('✅解压文件完成', 'SUCCESS');
+            this.sendLog('✅ 解压文件完成', 'SUCCESS');
             fs.unlinkSync(filePath); // 删除压缩包
             resolve(true);
           }
@@ -414,6 +426,52 @@ export class WCF {
       console.log('✅ 微信客户端已唤醒');
     } catch (error) {
       this.sendLog(`❌ 无法唤醒微信:${(error as Error).message}`, 'ERROR');
+    }
+  };
+  public injectVersionDll = async (version: string, download_wechat: boolean = false) => {
+    const app_downloadDir = app.getPath('downloads');
+    // 先关闭WCF
+    this.closeWCF();
+    //检查指定版本是否存在
+    this.sendLog(`开始检测指定版本:${version}是否存在`, 'INFO');
+    const url = `https://api.github.com/repos/lich0821/WeChatFerry/releases/tags/${version}`;
+    const res = await axios.get(url, {
+      validateStatus: (status) => status < 500,
+    });
+    const info = res.data;
+    if (info.status == 404) {
+      this.sendLog(`指定版本:${version}不存在`, 'ERROR');
+      return 404;
+    }
+    // 获取assets列表
+    const assets = info.assets;
+    const [sdkInfo, WechatInfo] = assets;
+    const sdkUrl = sdkInfo.browser_download_url;
+    this.sendLog(`✅ 获取指定版本:${version}下载地址成功:${sdkUrl}`, 'SUCCESS');
+    const filename = path.basename(sdkUrl);
+    const sdkFilepath = path.join(this.Wcf_directory, filename);
+    const sdkResponse = await this.downloadFile(sdkUrl, sdkFilepath);
+    if (!sdkResponse) return sdkResponse;
+    const unCompress = await this.unzipFile(sdkFilepath, this.Wcf_directory);
+    if (unCompress) {
+      this.wcfConfig.version = version || '';
+      this.writeConfig(this.wcfConfig);
+      this.reportConfig();
+    }
+    if (!unCompress) return unCompress;
+    this.sendLog(`✅ 指定版本:${version}下载完成`, 'SUCCESS');
+    // 开始下载对应的wechat.exe
+    if (download_wechat) {
+      const wechatUrl = WechatInfo.browser_download_url;
+      const wechatFilename = path.basename(wechatUrl);
+      // 开始下载Wechat.exe
+      this.sendLog(`开始下载指定版本:${version}对应的${WechatInfo.name}`, 'INFO');
+      const wechatFilepath = path.join(app_downloadDir, wechatFilename);
+      const wechatResponse = await this.downloadFile(wechatUrl, wechatFilepath);
+      if (!wechatResponse) return wechatResponse;
+      this.sendLog(`✅ 指定版本:${version}对应的${WechatInfo.name}下载完成`, 'SUCCESS');
+      this.sendLog(`文件已保存:${wechatFilepath}`, 'INFO');
+      this.sendLog(`安装指定版本微信登录成功后 重新启动WCF即可`, 'INFO');
     }
   };
 }

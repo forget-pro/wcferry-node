@@ -2,6 +2,7 @@ import { Log, useLog } from './log';
 import { useNotification, NButton, useMessage } from 'naive-ui';
 import { reactive, h } from 'vue';
 import dayjs from 'dayjs';
+import { download } from 'naive-ui/es/_utils';
 interface WCFConfig {
   port: number;
   debug: boolean;
@@ -25,6 +26,8 @@ interface Istate {
     debug: boolean;
     isHttp: boolean;
     proxyUrl: string;
+    version: string;
+    download_wechat: boolean;
   };
 }
 
@@ -45,6 +48,8 @@ export function useHook(log: Log) {
       debug: false,
       isHttp: false,
       proxyUrl: '',
+      version: '',
+      download_wechat: false,
     },
     HttpServeStart: false,
     wcfStarting: false,
@@ -144,7 +149,7 @@ export function useHook(log: Log) {
         unshift(log.info(`当前端口已被占用:${state.wcfConfig.port}`));
       }
       checkUpdate(true);
-      // !res.http && startWcfHttpServer(true);
+      !res.http && startWcfHttpServer(true);
     }
   };
 
@@ -157,7 +162,7 @@ export function useHook(log: Log) {
     await window.ipcRenderer.invoke('wcf:updateConfig', {
       port: state.formData.wcfPort,
     });
-    unshift(log.success(`✅WCF端口已修改为:${state.formData.wcfPort}`));
+    unshift(log.success(`✅ WCF端口已修改为:${state.formData.wcfPort}`));
     unshift(log.info('WCF即将开始重启....'));
     await window.ipcRenderer.invoke('wcf:restartWcf');
   };
@@ -171,7 +176,7 @@ export function useHook(log: Log) {
     await window.ipcRenderer.invoke('wcf:updateConfig', {
       httpPort: state.formData.httpProt,
     });
-    unshift(log.success(`✅HTTP端口已修改为:${state.formData.httpProt}`));
+    unshift(log.success(`✅ HTTP端口已修改为:${state.formData.httpProt}`));
     unshift(log.info('HTTP即将开始重启....'));
     await window.ipcRenderer.invoke('wcf:closeWcfHttpServer');
     await window.ipcRenderer.invoke('wcf:startWcfHttpServer');
@@ -182,7 +187,7 @@ export function useHook(log: Log) {
     await window.ipcRenderer.invoke('wcf:updateConfig', {
       proxy_url: state.formData.proxyUrl,
     });
-    unshift(log.success(`✅代理地址已修改为:${state.formData.proxyUrl}`));
+    unshift(log.success(`✅ 代理地址已修改为:${state.formData.proxyUrl}`));
   };
 
   const debugChange = async (checked: boolean) => {
@@ -212,6 +217,20 @@ export function useHook(log: Log) {
     await window.ipcRenderer.invoke('wcf:startWCF');
   };
 
+  const injectVersion = async () => {
+    // 注入指定版本
+    if (!state.formData.version) return message.error('版本号不能为空');
+    if (state.wcfConfig.version == state.formData.version) return message.error('与当前版本相同 无需注入');
+    const res = await window.ipcRenderer.invoke('wcf:injectVersionWcf', {
+      version: state.formData.version,
+      download_wechat: state.formData.download_wechat,
+    });
+    if (res == 404) {
+      message.error('版本号不存在');
+      return;
+    }
+  };
+
   return {
     state,
     registerEvent,
@@ -227,5 +246,6 @@ export function useHook(log: Log) {
     appStartCheck,
     startWcfHttpServer,
     saveWcfPort,
+    injectVersion,
   };
 }

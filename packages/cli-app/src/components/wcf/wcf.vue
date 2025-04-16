@@ -131,11 +131,34 @@
           <p class="font-semibold mb-2"><i class="fas fa-brands fa-github text-lg"></i> GitHub代理地址:</p>
           <div class="flex">
             <n-input placeholder="请输入代理地址" type="text" v-model:value="state.formData.proxyUrl" clearable
-              class="flex-1" />
+              class="flex-1 mr-4" />
             <n-button color="#374153" type="primary" :loading="state.HttpServeStart" @click="saveProxyUrl" class="ml-4">
               <i class="fas fa-save mr-2"></i>
               保存
             </n-button>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="font-semibold mb-2">
+            <span class="mr-2">下载指定版本:</span>
+            <n-checkbox v-model:checked="state.formData.download_wechat"> 同时下载对应版本微信 </n-checkbox>
+          </div>
+          <div class="flex">
+            <n-input placeholder="请输入 Release Tag" type="text" v-model:value="state.formData.version" clearable
+              class="flex-1 mr-4" />
+            <n-button color="#374153" type="primary" :loading="state.HttpServeStart" @click="injectVersion"
+              class="ml-4">
+              <i class="fas fa-save mr-2"></i>
+              下载
+            </n-button>
+          </div>
+          <div class="text-xs text-gray-500 mt-2 flex items-center">
+            <span>此处填写：WCF Release Tag 即可 例如：v39.4.5</span>
+
+            <div class="text-xs text-blue-600 cursor-pointer ml-2">
+              <i class="fa-brands fa-github text-sm"></i>
+              <span class="ml-1">Wechatferry</span>
+            </div>
           </div>
         </div>
         <div class="mt-4">
@@ -153,6 +176,7 @@
             <loading color="#bebebe" :show="state.httpLoading" :size="16"></loading>
           </div>
         </div>
+
       </n-drawer-content>
     </n-drawer>
   </div>
@@ -171,7 +195,7 @@ const log = new Log();
 
 const dialog = useDialog()
 
-const { state, logs, registerEvent, saveProxyUrl, debugChange, updateWcf, saveHttpPort, message, unshift, saveWcfPort, appStartCheck, startWcfHttpServer } = useHook(log);
+const { state, logs, registerEvent, injectVersion, saveProxyUrl, debugChange, updateWcf, saveHttpPort, message, unshift, saveWcfPort, appStartCheck, startWcfHttpServer } = useHook(log);
 
 const handleOperation = async (value: ButtonGroupItem) => {
   const operation = {
@@ -227,6 +251,8 @@ const handleOperation = async (value: ButtonGroupItem) => {
         proxyUrl: state.wcfConfig.proxy_url || '',
         debug: state.wcfConfig.debug || false,
         isHttp: state.http_isRun || false,
+        version: state.wcfConfig.version || '',
+        download_wechat: false,
       }
       state.active = true;
 
