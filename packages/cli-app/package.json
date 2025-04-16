@@ -20,7 +20,7 @@
     "koffi": "^2.9.0",
     "naive-ui": "^2.41.0",
     "node-cron": "^3.0.3",
-    "uuid": "8",
+    "uuid": "^8.3.2",
     "vue": "^3.4.21"
   },
   "devDependencies": {

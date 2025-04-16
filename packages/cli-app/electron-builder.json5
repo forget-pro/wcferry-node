@@ -1,40 +1,49 @@
+
 {
-  $schema: 'https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json',
-  appId: 'YourAppID',
-  asar: true,
-  productName: 'Wcf-Tool',
-  publisherName: 'dr-forget',
-  directories: {
-    output: 'release/${version}',
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "YourAppID",
+  "asar": true,
+  "productName": "Wcf-Tool",
+  "directories": {
+    "output": "release/${version}"
   },
-  files: ['dist', 'dist-electron'],
-  mac: {
-    target: ['dmg'],
-    artifactName: '${productName}-Mac-${version}-Installer.${ext}',
-  },
-  win: {
-    target: [
-      {
-        target: 'nsis',
-        arch: ['x64'],
-      },
+  "files": [
+    "dist",
+    "dist-electron"
+  ],
+  "mac": {
+    "target": [
+      "dmg"
     ],
-    icon: 'build/icon.ico',
-    artifactName: '${productName}-Windows-${version}-Setup.${ext}',
+    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
   },
-  nsis: {
-    oneClick: false,
-    perMachine: false,
-    allowToChangeInstallationDirectory: true,
-    deleteAppDataOnUninstall: false,
-    shortcutName: '${productName}',
-    uninstallDisplayName: '${productName}',
-    createDesktopShortcut: true,
-    installerIcon: 'build/icon.ico',
-    uninstallerIcon: 'build/icon.ico',
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "icon": "build/icon.ico",
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
   },
-  linux: {
-    target: ['AppImage'],
-    artifactName: '${productName}-Linux-${version}.${ext}',
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false,
+    "shortcutName": "${productName}",
+    "uninstallDisplayName": "${productName}",
+    "createDesktopShortcut": true,
+    "installerIcon": "build/icon.ico",
+    "uninstallerIcon": "build/icon.ico"
   },
+  "linux": {
+    "target": [
+      "AppImage"
+    ],
+    "artifactName": "${productName}-Linux-${version}.${ext}"
+  }
 }
