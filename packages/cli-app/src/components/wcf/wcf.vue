@@ -14,6 +14,7 @@
         <div class="text-xs text-gray-600 cursor-pointer ml-4">
           <i class="fa-solid fa-user-nurse"></i>
           <span class="ml-1">作者:Forget</span>
+          <span class="ml-2">v{{ state.wcfConfig.app_version }}</span>
         </div>
       </div>
 
@@ -155,7 +156,7 @@
           <div class="text-xs text-gray-500 mt-2 flex items-center">
             <span>此处填写：WCF Release Tag 即可 例如：v39.4.5</span>
 
-            <div class="text-xs text-blue-600 cursor-pointer ml-2">
+            <div class="text-xs text-blue-600 cursor-pointer ml-2" @click="openGithubRelease">
               <i class="fa-brands fa-github text-sm"></i>
               <span class="ml-1">Wechatferry</span>
             </div>
@@ -196,6 +197,8 @@ const log = new Log();
 const dialog = useDialog()
 
 const { state, logs, registerEvent, injectVersion, saveProxyUrl, debugChange, updateWcf, saveHttpPort, message, unshift, saveWcfPort, appStartCheck, startWcfHttpServer } = useHook(log);
+
+
 
 const handleOperation = async (value: ButtonGroupItem) => {
   const operation = {
@@ -256,6 +259,23 @@ const handleOperation = async (value: ButtonGroupItem) => {
       }
       state.active = true;
 
+    },
+    checkUpdate: async () => {
+      unshift(log.warn('资源托管在GitHub请注意网络环境'));
+      try {
+        const res = await window.ipcRenderer.invoke('app:update');
+        if (res == 0) {
+          unshift(log.success('当前版本已是最新版本'));
+        }
+        if (res == 1) {
+          unshift(log.success('当前版本有更新,即将更新到最新版本'));
+        }
+        if (res == 2) {
+          unshift(log.success('当前正在更新中，请勿重复操作'));
+        }
+      } catch (e: any) {
+        unshift(log.error(`检查更新失败:${e.message}`));
+      }
     }
   };
   // @ts-ignore
@@ -275,6 +295,11 @@ const HttpEvent = async (checked: boolean) => {
 
 const openGithub = () => {
   window.ipcRenderer.invoke('open:url', 'https://github.com/dr-forget/wcferry-node')
+}
+
+const openGithubRelease = () => {
+  window.ipcRenderer.invoke('open:url', 'https://github.com/lich0821/WeChatFerry/releases')
+
 }
 
 onMounted(async () => {
