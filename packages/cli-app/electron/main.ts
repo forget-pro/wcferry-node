@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, Menu, shell, globalShortcut } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { WCF } from './wcf';
+import { ElectronUpdate } from './update';
 import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -25,6 +26,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 
 let win: BrowserWindow | null;
 let wcf: WCF | null = null;
+const electronUpdate = new ElectronUpdate();
 
 function startMemoryMonitor(win: BrowserWindow) {
   const memoryUsage = process.memoryUsage();
@@ -53,6 +55,7 @@ function createWindow() {
     });
     wcf?.registerSchedule('0 */12 * * *', async () => {
       const res = await wcf?.checkUpdate(); // 检测更新
+      electronUpdate.checkUpdate(); // 检测更新
       win?.webContents.send('wcf:checkUpdateNotiy', res); // 检测更新
     });
 

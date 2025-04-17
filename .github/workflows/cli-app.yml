@@ -69,5 +69,6 @@ jobs:
             - Release for version v${{ steps.get_electron_version.outputs.electron_version }}
           files: |
             packages/cli-app/release/${{ steps.get_electron_version.outputs.electron_version }}/${{ steps.get_product_name.outputs.product_name }}-Windows-${{ steps.get_electron_version.outputs.electron_version }}-Setup.exe
+            packages/cli-app/release/${{ steps.get_electron_version.outputs.electron_version }}/latest.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

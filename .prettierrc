@@ -1,5 +1,13 @@
 {
-  "singleQuote": true,
+  "singleQuote": false,
   "trailingComma": "all",
-  "printWidth": 170
+  "printWidth": 170,
+  "overrides": [
+    {
+      "files": "*.json5",
+      "options": {
+        "parser": "json"
+      }
+    }
+  ]
 }
