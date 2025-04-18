@@ -2,7 +2,7 @@ name: Check Upstream Release and Publish
 
 on:
   schedule:
-    - cron: '0 * * * *' # 每小时执行一次
+    - cron: "0 * * * *" # 每小时执行一次
   workflow_dispatch: # 支持手动触发
 
 permissions:
@@ -64,7 +64,7 @@ jobs:
         uses: actions/setup-node@v4
         if: env.new_version == 'true'
         with:
-          node-version: '22'
+          node-version: "22"
 
       # 7. 安装 pnpm
       - name: Install pnpm globally
@@ -73,6 +73,16 @@ jobs:
           npm install -g pnpm@8
           pnpm --version  # 确认 pnpm 安装成功
 
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        if: env.new_version == 'true'
+        with:
+          path: |
+            ~/.pnpm-store
+            packages/**/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
       # 8. 安装依赖
       - name: Install dependencies
         if: env.new_version == 'true'
@@ -107,17 +117,6 @@ jobs:
           pnpm version patch
           pnpm version patch 
           git add .
-          pnpm publish --access public --no-git-checks  # 禁用 git 检查，避免 "unclean" 错误
-
-      # 13. 发布 CLI 包
-      - name: CLI package build & publish
-        if: env.new_version == 'true'
-        run: |
-          cd packages/cli
-          pnpm version patch
-          pnpm version patch
-          git add .
-          pnpm run build
           pnpm publish --access public --no-git-checks  # 禁用 git 检查，避免 "unclean" 错误
 
       # 14. 发布 GitHub package

@@ -2,6 +2,7 @@ node_modules
 dist/
 dist/release/
 packages/cli-app/release/
+packages/cli-app/dist-electron/
 # Logs
 logs
 *.log
