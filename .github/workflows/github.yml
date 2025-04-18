@@ -38,7 +38,7 @@ jobs:
         run: |
           echo "latest_release=${{ env.latest_release }}"
           echo "local_version=${{ env.local_version }}"
-          if [ -z "${{ env.latest_release }}" ]; then
+          if [ -z "${{ env.latest_release }}"] || [ "${{ env.latest_release }}" = "null" ]; then
             echo "No latest release found. Skipping version comparison."
             echo "new_version=false" >> $GITHUB_ENV
             exit 0
@@ -62,7 +62,7 @@ jobs:
         uses: actions/setup-node@v4
         if: env.new_version == 'true'
         with:
-          node-version: '22'
+          node-version: "22"
 
       # 7. 安装 pnpm
       - name: Install pnpm globally
