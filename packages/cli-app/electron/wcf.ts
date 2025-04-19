@@ -41,6 +41,7 @@ export class WCF {
     if (!fs.existsSync(this.Wcf_directory)) {
       fs.mkdirSync(this.Wcf_directory, { recursive: true });
     }
+    const version = app.getVersion();
     const initConfig: WCFConfig = {
       port: 10086,
       debug: false,
@@ -48,11 +49,11 @@ export class WCF {
       version: "",
       httpPort: 9200,
       cronCheck: 12,
-      app_version: app.getVersion(),
+      app_version: version,
     };
     if (fs.existsSync(this.wcfconfigPath)) {
       const config = JSON.parse(fs.readFileSync(this.wcfconfigPath, "utf-8"));
-      this.wcfConfig = { ...initConfig, ...config };
+      this.wcfConfig = { ...initConfig, ...config, app_version: version };
     } else {
       this.wcfConfig = initConfig;
     }
@@ -244,7 +245,7 @@ export class WCF {
         this.sendLog(`WCF启动失败：${result}`, "ERROR");
         return;
       }
-      this.sendLog(`✅WCF启动成功:tcp://0.0.0.0:${this.wcfConfig.port}发起连接`, "SUCCESS");
+      this.sendLog(`✅WCF启动成功:Tcp://0.0.0.0:${this.wcfConfig.port}`, "SUCCESS");
       this.checkWCFIsRun();
       return true;
     } catch (error: any) {
@@ -317,18 +318,25 @@ export class WCF {
     this.sendLog("开始重置WCF环境", "INFO");
     await this.KillPort(this.wcfConfig.port);
     await this.KillPort(+this.wcfConfig.port + 1);
+    this.checkWCFIsRun();
   };
   public KillPort = async (port: number) => {
     try {
       const pids = await this.getPidsByPort(port);
+      // 过滤掉pid为0的进程
+      const filteredPids = pids.filter((pid) => pid !== 0);
+      if (filteredPids.length == 0) {
+        this.sendLog(`当前端口:${port}没有被占用`, "INFO");
+        return;
+      }
       if (pids.length == 0) {
         this.sendLog(`当前端口:${port}没有被占用`, "INFO");
         return;
       }
       this.sendLog(`成功检测${port}端口对应的PID:${pids},即将终止相关PID进程`, "INFO");
-      pids.forEach((item) => {
+      filteredPids.forEach((item) => {
         const result = this.killProcessByPid(item);
-        this.sendLog(`${result.success ? "✅" : ""}${result.message}`, result.success ? "SUCCESS" : "ERROR");
+        this.sendLog(result.message, result.success ? "SUCCESS" : "ERROR");
       });
     } catch (error: any) {
       this.sendLog(`重置WCF环境失败:${error.message}`, "ERROR");

@@ -235,7 +235,7 @@ const handleOperation = async (value: ButtonGroupItem) => {
     reset: () => {
       dialog.warning({
         title: '重置WCF',
-        content: '重置WCF会直接KILL掉WCF端口，会导致微信退出进程，重新唤醒微信，是否继续？',
+        content: '重置WCF会直接KILL掉WCF端口，由于端口Hook了微信进程，会导致微信退出进程，重新唤醒微信，是否继续？',
         positiveText: '确定',
         negativeText: '取消',
         draggable: true,

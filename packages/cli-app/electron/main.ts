@@ -5,7 +5,6 @@ import { ElectronUpdate } from "./update";
 import path from "node:path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 // The built directory structure
 //
 // ├─┬─┬ dist
@@ -15,6 +14,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // │ │ ├── main.js
 // │ │ └── preload.mjs
 // │
+console.log("app.getVersion()", app.getVersion());
+console.log("app.getAppPath()", app.getAppPath());
 process.env.APP_ROOT = path.join(__dirname, "..");
 
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
@@ -68,7 +69,6 @@ function createWindow() {
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
-    win.webContents.openDevTools();
   } else {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, "index.html"));

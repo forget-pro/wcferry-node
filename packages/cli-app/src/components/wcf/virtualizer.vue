@@ -1,6 +1,6 @@
 <template>
-  <div ref="parentRef" class="h-full overflow-y-scroll" style="contain: strict">
-    <div :style="{ height: `${totalSize}px` }" class="relative w-full">
+  <div ref="parentRef" class="h-full overflow-y-auto" style="contain: strict;scrollbar-gutter: stable;">
+    <div :style="{ height: `${totalSize}px` }" class="relative w-full ">
       <div class="absolute top-0 left-0 w-full" :style="{
         transform: `translateY(${virtualRows[0]?.start ?? 0}px)`,
       }">
