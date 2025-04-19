@@ -69,6 +69,7 @@ function createWindow() {
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
+    win?.webContents.toggleDevTools();
   } else {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
@@ -86,6 +87,7 @@ function createWindow() {
   ipcMain.handle("wcf:closeWcf", wcf.closeWCF); //关闭WCF核心
   ipcMain.handle("wcf:startWCF", wcf.startWCF); //启动WCF核心
   ipcMain.handle("wcf:resetWcf", wcf.resetWCF); //重置WCF环境
+  ipcMain.handle("wcf:readWcfLog", wcf.readWcfLog); //读取WCF日志
   ipcMain.handle("wcf:injectVersionWcf", (_, data: { version: string; download_wechat: boolean }) => wcf?.injectVersionDll(data.version, data.download_wechat || false)); //注入版本号
   ipcMain.handle("open:url", (_, url) => {
     shell.openExternal(url); // 打开链接

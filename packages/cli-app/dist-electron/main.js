@@ -18091,47 +18091,52 @@ function requireLimit() {
   })(limit);
   return limit;
 }
-(function(module, exports) {
-  Object.defineProperty(exports, "__esModule", { value: true });
-  const formats_1 = formats;
-  const limit_1 = requireLimit();
-  const codegen_12 = codegen;
-  const fullName = new codegen_12.Name("fullFormats");
-  const fastName = new codegen_12.Name("fastFormats");
-  const formatsPlugin = (ajv2, opts = { keywords: true }) => {
-    if (Array.isArray(opts)) {
-      addFormats(ajv2, opts, formats_1.fullFormats, fullName);
+var hasRequiredDist$1;
+function requireDist$1() {
+  if (hasRequiredDist$1) return dist$2.exports;
+  hasRequiredDist$1 = 1;
+  (function(module, exports) {
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const formats_1 = formats;
+    const limit_1 = requireLimit();
+    const codegen_12 = codegen;
+    const fullName = new codegen_12.Name("fullFormats");
+    const fastName = new codegen_12.Name("fastFormats");
+    const formatsPlugin = (ajv2, opts = { keywords: true }) => {
+      if (Array.isArray(opts)) {
+        addFormats(ajv2, opts, formats_1.fullFormats, fullName);
+        return ajv2;
+      }
+      const [formats3, exportName] = opts.mode === "fast" ? [formats_1.fastFormats, fastName] : [formats_1.fullFormats, fullName];
+      const list = opts.formats || formats_1.formatNames;
+      addFormats(ajv2, list, formats3, exportName);
+      if (opts.keywords)
+        (0, limit_1.default)(ajv2);
       return ajv2;
+    };
+    formatsPlugin.get = (name, mode = "full") => {
+      const formats3 = mode === "fast" ? formats_1.fastFormats : formats_1.fullFormats;
+      const f = formats3[name];
+      if (!f)
+        throw new Error(`Unknown format "${name}"`);
+      return f;
+    };
+    function addFormats(ajv2, list, fs2, exportName) {
+      var _a2;
+      var _b;
+      (_a2 = (_b = ajv2.opts.code).formats) !== null && _a2 !== void 0 ? _a2 : _b.formats = (0, codegen_12._)`require("ajv-formats/dist/formats").${exportName}`;
+      for (const f of list)
+        ajv2.addFormat(f, fs2[f]);
     }
-    const [formats3, exportName] = opts.mode === "fast" ? [formats_1.fastFormats, fastName] : [formats_1.fullFormats, fullName];
-    const list = opts.formats || formats_1.formatNames;
-    addFormats(ajv2, list, formats3, exportName);
-    if (opts.keywords)
-      (0, limit_1.default)(ajv2);
-    return ajv2;
-  };
-  formatsPlugin.get = (name, mode = "full") => {
-    const formats3 = mode === "fast" ? formats_1.fastFormats : formats_1.fullFormats;
-    const f = formats3[name];
-    if (!f)
-      throw new Error(`Unknown format "${name}"`);
-    return f;
-  };
-  function addFormats(ajv2, list, fs2, exportName) {
-    var _a2;
-    var _b;
-    (_a2 = (_b = ajv2.opts.code).formats) !== null && _a2 !== void 0 ? _a2 : _b.formats = (0, codegen_12._)`require("ajv-formats/dist/formats").${exportName}`;
-    for (const f of list)
-      ajv2.addFormat(f, fs2[f]);
-  }
-  module.exports = exports = formatsPlugin;
-  Object.defineProperty(exports, "__esModule", { value: true });
-  exports.default = formatsPlugin;
-})(dist$2, dist$2.exports);
-var distExports$1 = dist$2.exports;
+    module.exports = exports = formatsPlugin;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = formatsPlugin;
+  })(dist$2, dist$2.exports);
+  return dist$2.exports;
+}
 const Ajv$1 = ajvExports;
 const fastUri$1 = fastUriExports;
-const ajvFormats = distExports$1;
+const ajvFormats = requireDist$1();
 const clone$2 = rfdc_1({ proto: true });
 let Validator$1 = class Validator {
   constructor(ajvOptions) {
@@ -22250,7 +22255,7 @@ class ValidatorCompiler {
       }
     }
     if (addFormatPlugin) {
-      distExports$1(this.ajv);
+      requireDist$1()(this.ajv);
     }
     (_a2 = options.onCreate) == null ? void 0 : _a2.call(options, this.ajv);
     const sourceSchemas = Object.values(externalSchemas);
@@ -51079,6 +51084,23 @@ function PortIsRun(port) {
     return false;
   }
 }
+function parseLog(line) {
+  const regex = /^\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?::\d+::.*?)\] (.*)$/;
+  const match = line.match(regex);
+  if (!match) return null;
+  return {
+    time: match[1],
+    // 时间
+    level: match[2],
+    // 日志等级
+    app: match[3],
+    // 日志应用
+    line: match[4],
+    // 日志位置
+    message: match[5]
+    // 日志消息
+  };
+}
 const require$1 = createRequire(import.meta.url);
 const koffi = require$1("koffi");
 const cron = require$1("node-cron");
@@ -51260,8 +51282,7 @@ class WCF {
       var _a2;
       const result = await this.checkWCFIsRun();
       if (result.wcf_run) {
-        (_a2 = this.WxDestroySDK) == null ? void 0 : _a2.call(this);
-        this.sendLog("WCF已关闭", "INFO");
+        await ((_a2 = this.WxDestroySDK) == null ? void 0 : _a2.call(this));
       }
       await this.startWCF();
     });
@@ -51274,6 +51295,7 @@ class WCF {
         this.sendLog("WCF未运行", "INFO");
       }
       this.checkWCFIsRun();
+      this.clearWcfLog();
     });
     // 修改WCF配置文件
     __publicField(this, "modifyWCFConfig", async (_, config2) => {
@@ -51451,6 +51473,24 @@ class WCF {
         this.sendLog(`✅ 指定版本:${version2}对应的${WechatInfo.name}下载完成`, "SUCCESS");
         this.sendLog(`文件已保存:${wechatFilepath}`, "INFO");
         this.sendLog(`安装指定版本微信登录成功后 重新启动WCF即可`, "INFO");
+      }
+    });
+    // 读取wcf日志
+    __publicField(this, "readWcfLog", () => {
+      const logsPath = require$$1$4.join(app.getAppPath(), "logs/wcf.txt");
+      if (fs$k.existsSync(logsPath)) {
+        const logs = fs$k.readFileSync(logsPath, "utf-8");
+        return logs.split("\n").reverse().map((line) => parseLog(line)).filter((item) => item);
+      }
+      this.sendLog("WCF日志文件不存在", "ERROR");
+      this.sendLog("请先启动WCF后再查看日志", "ERROR");
+      return [];
+    });
+    //清空日志
+    __publicField(this, "clearWcfLog", () => {
+      const logsPath = require$$1$4.join(app.getAppPath(), "logs/wcf.txt");
+      if (fs$k.existsSync(logsPath)) {
+        fs$k.writeFileSync(logsPath, "");
       }
     });
     this.windown = win2;
@@ -62980,6 +63020,7 @@ function createWindow() {
   });
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
+    win == null ? void 0 : win.webContents.toggleDevTools();
   } else {
     win.loadFile(path$n.join(RENDERER_DIST, "index.html"));
   }
@@ -62995,6 +63036,7 @@ function createWindow() {
   ipcMain.handle("wcf:closeWcf", wcf.closeWCF);
   ipcMain.handle("wcf:startWCF", wcf.startWCF);
   ipcMain.handle("wcf:resetWcf", wcf.resetWCF);
+  ipcMain.handle("wcf:readWcfLog", wcf.readWcfLog);
   ipcMain.handle("wcf:injectVersionWcf", (_, data) => wcf == null ? void 0 : wcf.injectVersionDll(data.version, data.download_wechat || false));
   ipcMain.handle("open:url", (_, url2) => {
     shell.openExternal(url2);

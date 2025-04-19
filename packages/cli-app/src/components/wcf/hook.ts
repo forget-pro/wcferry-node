@@ -29,6 +29,9 @@ interface Istate {
     version: string;
     download_wechat: boolean;
   };
+  showWcflog: boolean;
+  wcflogs: string[];
+  readying: boolean;
 }
 
 export function useHook(log: Log) {
@@ -53,6 +56,9 @@ export function useHook(log: Log) {
     },
     HttpServeStart: false,
     wcfStarting: false,
+    showWcflog: false,
+    wcflogs: [],
+    readying: false,
   });
 
   //   注册监听事件
@@ -232,8 +238,25 @@ export function useHook(log: Log) {
     }
   };
 
+  const readWcfLog = async () => {
+    try {
+      state.readying = true;
+      await window.ipcRenderer.invoke("wcf:readWcfLog").then((res) => {
+        console.log(res, 241);
+        if (res.length == 0) {
+          message.info("当前暂无日志，请启动WCF后再查看");
+        }
+        state.wcflogs = res;
+        state.showWcflog = true;
+      });
+    } finally {
+      state.readying = false;
+    }
+  };
+
   return {
     state,
+    readWcfLog,
     registerEvent,
     checkUpdate,
     updateWcf,
