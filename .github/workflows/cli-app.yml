@@ -34,7 +34,7 @@ jobs:
             ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --prefer-offline --no-hoist
 
       - name: Read Electron productName
         id: get_product_name
