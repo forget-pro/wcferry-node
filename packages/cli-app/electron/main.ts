@@ -14,8 +14,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // │ │ ├── main.js
 // │ │ └── preload.mjs
 // │
-console.log("app.getVersion()", app.getVersion());
-console.log("app.getAppPath()", app.getAppPath());
 process.env.APP_ROOT = path.join(__dirname, "..");
 
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
@@ -125,7 +123,7 @@ process.on("uncaughtException", (error: any) => {
 });
 // 捕获未处理的 Promise 拒绝
 process.on("unhandledRejection", (reason: any) => {
-  win?.webContents.send("unhandledRejection", reason.message); // 发送到渲染进程
+  win?.webContents.send("unhandledRejection", `Pormise:${reason.message}`); // 发送到渲染进程
   // 可以在此处添加自定义处理逻辑
 });
 

@@ -51153,15 +51153,16 @@ class WCF {
       }
     });
     __publicField(this, "downloadFile", async (url2, dest) => {
+      const writer = fs$k.createWriteStream(dest);
       try {
         const proxyurl = this.wcfConfig.proxy_url ? this.wcfConfig.proxy_url + "/" : "";
         const down_url = proxyurl + url2;
         this.sendLog(`开始下载文件:${down_url}`, "INFO");
-        const writer = fs$k.createWriteStream(dest);
         const download = await axios({
           method: "get",
           url: down_url,
-          responseType: "stream"
+          responseType: "stream",
+          timeout: 500
         });
         download.data.pipe(writer);
         return await new Promise((resolve2, reject) => {
@@ -51172,7 +51173,10 @@ class WCF {
           writer.on("error", reject);
         });
       } catch (error2) {
+        await writer.close();
         this.sendLog(`下载失败:${error2.message},url:${url2}`, "ERROR");
+        console.log(dest, 154);
+        fs$k.unlinkSync(dest);
         return false;
       }
     });
@@ -51187,6 +51191,7 @@ class WCF {
         const filename = require$$1$4.basename(result == null ? void 0 : result.download_url);
         output = require$$1$4.join(this.Wcf_directory, filename);
         if (fs$k.existsSync(output)) {
+          console.log("文件存在跳过下载");
           return await this.unzipFile(output);
         }
         const res2 = await this.downloadFile(result == null ? void 0 : result.download_url, output);
@@ -51199,7 +51204,6 @@ class WCF {
         }
       } catch (error2) {
         this.sendLog(`下载WCF失败:${error2.message}`, "ERROR");
-        fs$k.unlinkSync(output);
         return false;
       }
     });
@@ -51487,14 +51491,19 @@ class WCF {
       this.sendLog("开始解压文件", "INFO");
       const zip = new AdmZip(filePath);
       return await new Promise((resolve2, reject) => {
-        zip.extractAllToAsync(dest, true, (err2) => {
-          if (err2) reject(err2);
-          else {
-            this.sendLog("✅ 解压文件完成", "SUCCESS");
-            fs$k.unlinkSync(filePath);
-            resolve2(true);
-          }
-        });
+        try {
+          zip.extractAllToAsync(dest, true, (err2) => {
+            console.log(err2, 195);
+            if (err2) reject(err2);
+            else {
+              this.sendLog("✅ 解压文件完成", "SUCCESS");
+              fs$k.unlinkSync(filePath);
+              resolve2(true);
+            }
+          });
+        } catch (err2) {
+          console.log(err2, 205);
+        }
       });
     } catch (error2) {
       this.sendLog(`解压文件失败: ${error2}`, "ERROR");
@@ -63025,7 +63034,7 @@ process.on("uncaughtException", (error2) => {
   win == null ? void 0 : win.webContents.send("unhandledRejection", error2.message);
 });
 process.on("unhandledRejection", (reason) => {
-  win == null ? void 0 : win.webContents.send("unhandledRejection", reason.message);
+  win == null ? void 0 : win.webContents.send("unhandledRejection", `Pormise:${reason.message}`);
 });
 app.whenReady().then(createWindow);
 export {

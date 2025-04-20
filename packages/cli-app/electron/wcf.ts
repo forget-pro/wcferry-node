@@ -128,15 +128,16 @@ export class WCF {
   };
 
   public downloadFile = async (url: string, dest: string) => {
+    const writer = fs.createWriteStream(dest);
     try {
       const proxyurl = this.wcfConfig.proxy_url ? this.wcfConfig.proxy_url + "/" : "";
       const down_url = proxyurl + url;
       this.sendLog(`开始下载文件:${down_url}`, "INFO");
-      const writer = fs.createWriteStream(dest);
       const download = await axios({
         method: "get",
         url: down_url,
         responseType: "stream",
+        timeout: 12000,
       });
 
       download.data.pipe(writer);
@@ -148,7 +149,9 @@ export class WCF {
         writer.on("error", reject);
       });
     } catch (error: any) {
+      await writer.close();
       this.sendLog(`下载失败:${error.message},url:${url}`, "ERROR");
+      fs.unlinkSync(dest);
       return false;
     }
   };
@@ -165,6 +168,7 @@ export class WCF {
       const filename = path.basename(result?.download_url);
       output = path.join(this.Wcf_directory, filename);
       if (fs.existsSync(output)) {
+        console.log("文件存在跳过下载");
         return await this.unzipFile(output);
       }
       const res = await this.downloadFile(result?.download_url, output);
@@ -177,7 +181,6 @@ export class WCF {
       }
     } catch (error: any) {
       this.sendLog(`下载WCF失败:${error.message}`, "ERROR");
-      fs.unlinkSync(output); // 删除下载的文件
       return false;
     }
   };
@@ -188,15 +191,20 @@ export class WCF {
       this.sendLog("开始解压文件", "INFO");
       const zip = new AdmZip(filePath);
       return await new Promise((resolve, reject) => {
-        // @ts-ignore
-        zip.extractAllToAsync(dest, true, (err: any) => {
-          if (err) reject(err);
-          else {
-            this.sendLog("✅ 解压文件完成", "SUCCESS");
-            fs.unlinkSync(filePath); // 删除压缩包
-            resolve(true);
-          }
-        });
+        try {
+          // @ts-ignore
+          zip.extractAllToAsync(dest, true, (err: any) => {
+            console.log(err, 195);
+            if (err) reject(err);
+            else {
+              this.sendLog("✅ 解压文件完成", "SUCCESS");
+              fs.unlinkSync(filePath); // 删除压缩包
+              resolve(true);
+            }
+          });
+        } catch (err) {
+          console.log(err, 205);
+        }
       });
     } catch (error) {
       this.sendLog(`解压文件失败: ${error}`, "ERROR");
