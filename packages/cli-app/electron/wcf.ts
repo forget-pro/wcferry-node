@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, Tray, Menu } from "electron";
 import { createRequire } from "node:module";
 import Fastify, { FastifyInstance } from "fastify";
 import fs from "fs";
@@ -29,6 +29,7 @@ export class WCF {
   private server: FastifyInstance | null;
   private WxInitSDK: Function | null;
   private WxDestroySDK: Function | null;
+  private tray: Tray | null = null;
   private scheduleJobs: cron.ScheduledTask[];
   constructor(win: BrowserWindow) {
     this.windown = win;
@@ -37,6 +38,7 @@ export class WCF {
     this.wcfconfigPath = path.join(this.Wcf_directory, "config.json");
     this.WxInitSDK = null;
     this.WxDestroySDK = null;
+
     // 判断文件夹是否存在
     if (!fs.existsSync(this.Wcf_directory)) {
       fs.mkdirSync(this.Wcf_directory, { recursive: true });
@@ -319,6 +321,7 @@ export class WCF {
       http: this.server && PortIsRun(this.wcfConfig.httpPort) ? true : false,
     };
     this.windown.webContents.send("wcf:startEvent", params);
+    await this.updateTrayMenu(params);
     return params;
   };
   // 重置WCF环境
@@ -521,6 +524,96 @@ export class WCF {
     const logsPath = path.join(app.getAppPath(), "logs/wcf.txt");
     if (fs.existsSync(logsPath)) {
       fs.writeFileSync(logsPath, "");
+    }
+  };
+  // 创建托盘图标
+  public crateTray = async () => {
+    this.tray = new Tray(path.join(process.env.VITE_PUBLIC, "logo.png"));
+    this.tray.setToolTip("WCF-TOOL");
+    this.tray.on("double-click", () => {
+      this.windown?.show();
+    });
+  };
+
+  // 更新系统托盘菜单
+  public updateTrayMenu = async (runConfig: { portOcc: boolean; wcf_run: boolean; http: boolean }) => {
+    if (this.tray) {
+      const wcf_run = !runConfig.portOcc && runConfig.wcf_run;
+      const wcf_meun = wcf_run
+        ? [
+            {
+              label: "❌ 关闭WCF",
+              click: () => {
+                this.closeWCF();
+              },
+            },
+            {
+              label: "🔄 重启WCF",
+              click: () => {
+                this.restartWCF();
+              },
+            },
+          ]
+        : [
+            {
+              label: "🚀 启动WCF ",
+              click: () => {
+                this.closeWCF();
+              },
+            },
+            {
+              label: "♻️ 清理WCF环境",
+              click: () => {
+                this.resetWCF();
+              },
+            },
+          ];
+      const http_meun = runConfig.http
+        ? [
+            {
+              label: "❌ 关闭HTTP",
+              click: () => {
+                this.closeWcfServer();
+              },
+            },
+            {
+              label: "🔄 重启HTTP",
+              click: () => {
+                this.closeWcfServer();
+                this.startWcfServer();
+              },
+            },
+          ]
+        : [
+            {
+              label: "🚀 启动HTTP",
+              click: () => {
+                this.startWcfServer();
+              },
+            },
+          ];
+      const contextMenu = Menu.buildFromTemplate([
+        {
+          label: `🧱 WCF运行状态：${wcf_run ? "🟢" : "🔴"} 端口:${this.wcfConfig.port}`,
+        },
+        {
+          label: `🧱 HTTP运行状态：${runConfig.http ? "🟢" : "🔴"} 端口:${this.wcfConfig.httpPort}`,
+        },
+        ...wcf_meun,
+        ...http_meun,
+        { type: "separator" },
+        {
+          label: "❎ 退出",
+          click: () => {
+            this.closeWcfServer(); // 关闭WCF核心
+            this.clearSchedule(); // 清除定时任务
+            this.closeWCF(); // 关闭WCF核心
+            this.tray?.destroy();
+            app.quit();
+          },
+        },
+      ]);
+      this.tray.setContextMenu(contextMenu);
     }
   };
 }

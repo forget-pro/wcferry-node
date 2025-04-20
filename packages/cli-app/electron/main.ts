@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, shell, globalShortcut } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, shell, Tray, globalShortcut } from "electron";
 import { fileURLToPath } from "node:url";
 import { WCF } from "./wcf";
 import { ElectronUpdate } from "./update";
@@ -44,6 +44,7 @@ function createWindow() {
     },
   });
   wcf = new WCF(win);
+  wcf?.crateTray(); // 创建托盘
   electronUpdate = new ElectronUpdate(win);
 
   // Test active push message to Renderer-process.
@@ -93,21 +94,19 @@ function createWindow() {
   globalShortcut.register("CommandOrControl+Shift+I", () => {
     win?.webContents.toggleDevTools();
   });
+  win.on("close", (event) => {
+    // 阻止关闭，隐藏窗口
+    event.preventDefault();
+    win?.hide();
+  });
 }
 const menu = Menu.buildFromTemplate([]);
 Menu.setApplicationMenu(menu);
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-    wcf?.closeWcfServer(); // 关闭WCF核心
-    wcf?.clearSchedule(); // 清除定时任务
-    wcf?.closeWCF(); // 关闭WCF核心
-    win = null;
-    wcf = null;
-  }
+app.on("window-all-closed", (event: any) => {
+  event.preventDefault();
 });
 
 app.on("activate", () => {
