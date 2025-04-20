@@ -7,7 +7,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import AdmZip from "adm-zip";
 import { execSync } from "child_process";
-import { PortIsRun, parseLog } from "./tool";
+import { PortIsRun, parseLog, splitLogsByEntry } from "./tool";
 const require = createRequire(import.meta.url);
 const koffi = require("koffi");
 // @ts-ignore
@@ -501,13 +501,13 @@ export class WCF {
     try {
       const exePath = app.getPath("exe");
       const installDir = path.dirname(exePath);
-      const logsPath = path.join(installDir, "logs/wcf.txt");
+      const logsPath = app.isPackaged ? path.join(installDir, "logs/wcf.txt") : path.join(app.getAppPath(), "logs/wcf.txt");
       if (fs.existsSync(logsPath)) {
-        const logs = fs.readFileSync(logsPath, "utf-8").trim();
-        return logs
-          .split("\n")
-          .reverse()
-          .map((line) => parseLog(line.trim()));
+        const log = fs.readFileSync(logsPath, "utf-8").trim();
+        const logs = splitLogsByEntry(log);
+        const res = logs.reverse().map((line) => parseLog(line.trim()));
+        console.log(res, 509);
+        return res;
       } else {
         this.sendLog("WCF日志文件不存在", "ERROR");
         this.sendLog("请先启动WCF后再查看日志", "ERROR");

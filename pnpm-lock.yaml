@@ -134,7 +134,7 @@ importers:
   packages/core:
     dependencies:
       '@zippybee/nng':
-        specifier: ^1.1.16
+        specifier: ^1.1.20
         version: 1.1.20
       debug:
         specifier: ^4.3.7

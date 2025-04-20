@@ -1,16 +1,16 @@
-import { Socket, SocketOptions, lz4Compress } from '@zippybee/nng';
-import { wcf } from './proto/wcf';
-import { EventEmitter } from 'events';
-import { createTmpDir, ensureDirSync, sleep, uint8Array2str, type ToPlainType } from './utils';
-import { FileRef, FileSavableInterface } from './file-ref';
-import { Message } from './message';
-import * as eb from './proto/extrabyte';
-import koffi from 'koffi';
-import debug from 'debug';
-import path from 'path';
-import fs from 'fs';
-import os from 'os';
-import * as wcfInfo from './version.json';
+import { Socket, SocketOptions, lz4Compress } from "@zippybee/nng";
+import { wcf } from "./proto/wcf";
+import { EventEmitter } from "events";
+import { createTmpDir, ensureDirSync, sleep, uint8Array2str, type ToPlainType } from "./utils";
+import { FileRef, FileSavableInterface } from "./file-ref";
+import { Message } from "./message";
+import * as eb from "./proto/extrabyte";
+import koffi from "koffi";
+import debug from "debug";
+import path from "path";
+import fs from "fs";
+import os from "os";
+import * as wcfInfo from "./version.json";
 export type UserInfo = ToPlainType<wcf.UserInfo>;
 export type Contact = ToPlainType<wcf.RpcContact>;
 export type DbTable = ToPlainType<wcf.DbTable>;
@@ -34,15 +34,15 @@ export interface WcferryOptions {
   wechat_dir?: string; // 默认为C:/Users/Administrator/Documents/WeChat Files   填写微信文件管理目录
 }
 
-const logger = debug('wcferry:client');
+const logger = debug("wcferry:client");
 
 export class Wcferry {
   readonly NotFriend = {
-    fmessage: '朋友推荐消息',
-    medianote: '语音记事本',
-    floatbottle: '漂流瓶',
-    filehelper: '文件传输助手',
-    newsapp: '新闻',
+    fmessage: "朋友推荐消息",
+    medianote: "语音记事本",
+    floatbottle: "漂流瓶",
+    filehelper: "文件传输助手",
+    newsapp: "新闻",
   };
 
   private isMsgReceiving = false;
@@ -56,14 +56,14 @@ export class Wcferry {
   constructor(options?: WcferryOptions) {
     this.options = {
       port: options?.port || 10086,
-      host: options?.host || '127.0.0.1',
+      host: options?.host || "127.0.0.1",
       socketOptions: options?.socketOptions ?? {},
       cacheDir: options?.cacheDir || createTmpDir(),
       recvPyq: !!options?.recvPyq,
       service: options?.service || false,
-      wcf_path: options?.wcf_path || path.join(__dirname, '../wcf-sdk/sdk.dll'),
+      wcf_path: options?.wcf_path || path.join(__dirname, "../wcf-sdk/sdk.dll"),
       debug: options?.debug || false,
-      wechat_dir: options?.wechat_dir || path.win32.join(os.homedir(), 'Documents', 'WeChat Files'),
+      wechat_dir: options?.wechat_dir || path.win32.join(os.homedir(), "Documents", "WeChat Files"),
     };
 
     ensureDirSync(this.options.cacheDir);
@@ -72,21 +72,21 @@ export class Wcferry {
     this.socket = new Socket(this.options.socketOptions);
 
     // 初始化sdk dll
-    if (process.platform === 'win32' && this.options.host) {
+    if (process.platform === "win32" && this.options.host) {
       if (!fs.existsSync(this.options.wcf_path)) {
-        throw new Error('sdk.dll not found please npm run get-wcf');
+        throw new Error("sdk.dll not found please npm run get-wcf");
       }
       const wcf_sdk = koffi.load(this.options.wcf_path);
       // @ts-ignore
-      this.wechatInitSdk = wcf_sdk.func('int WxInitSDK(bool, int)', 'stdcall');
+      this.wechatInitSdk = wcf_sdk.func("int WxInitSDK(bool, int)", "stdcall");
       // @ts-ignore
-      this.wechatDestroySdk = wcf_sdk.func('int WxDestroySDK()', 'stdcall');
+      this.wechatDestroySdk = wcf_sdk.func("int WxDestroySDK()", "stdcall");
     }
   }
 
   private trapOnExit() {
-    process.on('exit', () => this.stop());
-    process.on('SIGINT', () => {
+    process.on("exit", () => this.stop());
+    process.on("SIGINT", () => {
       process.exit(0);
     });
   }
@@ -98,8 +98,8 @@ export class Wcferry {
     return this.isMsgReceiving;
   }
 
-  private createUrl(channel: 'cmd' | 'msg' = 'cmd') {
-    const url = `tcp://${this.options.host}:${this.options.port + (channel === 'cmd' ? 0 : 1)}`;
+  private createUrl(channel: "cmd" | "msg" = "cmd") {
+    const url = `tcp://${this.options.host}:${this.options.port + (channel === "cmd" ? 0 : 1)}`;
     logger(`wcf ${channel} url: %s`, url);
     return url;
   }
@@ -123,11 +123,11 @@ export class Wcferry {
   }
 
   private get msgListenerCount() {
-    return this.msgEventSub.listenerCount('wxmsg');
+    return this.msgEventSub.listenerCount("wxmsg");
   }
   private isRunSdk() {
     const wan_ip = this.getLocalIPAddress();
-    if (this.options.service || ['localhost', '127.0.0.1', wan_ip].includes(this.options.host)) return true;
+    if (this.options.service || ["localhost", "127.0.0.1", wan_ip].includes(this.options.host)) return true;
     return false;
   }
 
@@ -135,17 +135,17 @@ export class Wcferry {
   private startService() {
     const initResult = this.wechatInitSdk?.(this.options.debug, this.options.port);
     if (initResult !== 0) {
-      console.error('WCF =====>Failed to start');
+      console.error("WCF =====>Failed to start");
     }
     if (this.options.service) {
-      console.log('\x1b[37m\x1b[42m%s\x1b[0m', `WCF-SERVER:${wcfInfo.version}`);
+      console.log("\x1b[37m\x1b[42m%s\x1b[0m", `WCF-SERVER:${wcfInfo.version}`);
     }
   }
 
   private stopWcf() {
     const result = this.wechatDestroySdk?.();
     const res_num = result == 0 ? 0 : -1;
-    res_num !== 0 ? console.log(`WCF:资源释放失败:${res_num}`) : console.log('WCF:资源回收成功');
+    res_num !== 0 ? console.log(`WCF:资源释放失败:${res_num}`) : console.log("WCF:资源回收成功");
     return result;
   }
 
@@ -154,12 +154,12 @@ export class Wcferry {
     for (const interfaceName in interfaces) {
       const addresses = interfaces[interfaceName] || [];
       for (const address of addresses) {
-        if (address.family === 'IPv4' && !address.internal) {
+        if (address.family === "IPv4" && !address.internal) {
           return address.address;
         }
       }
     }
-    return '';
+    return "";
   }
 
   start() {
@@ -170,12 +170,12 @@ export class Wcferry {
       this.trapOnExit();
       if (this.options.service) return;
       this.socket.connect(this.createUrl());
-      console.log('\x1b[37m\x1b[42m%s\x1b[0m', `WCF-SDK:${wcfInfo.version}`);
+      console.log("\x1b[37m\x1b[42m%s\x1b[0m", `WCF-SDK:${wcfInfo.version}`);
       if (this.msgListenerCount > 0) {
         this.enableMsgReceiving();
       }
     } catch (err) {
-      logger('cannot connect to wcf RPC server, did wcf.exe started?');
+      logger("cannot connect to wcf RPC server, did wcf.exe started?");
       throw err;
     }
   }
@@ -183,7 +183,7 @@ export class Wcferry {
   stop() {
     if (this.options.service) return;
     if (this?.is_stop) return;
-    logger('Closing conneciton...');
+    logger("Closing conneciton...");
     this.is_stop = true;
     this?.disableMsgReceiving?.();
     this?.socket?.close();
@@ -194,9 +194,15 @@ export class Wcferry {
   }
 
   private sendRequest(req: wcf.Request): wcf.Response {
-    const data = req.serialize();
-    const buf = this.socket.send(Buffer.from(data));
-    return wcf.Response.deserialize(buf);
+    try {
+      const data = req.serialize();
+      const buf = this.socket.send(Buffer.from(data));
+      return wcf.Response.deserialize(buf);
+    } catch (error) {
+      // @ts-ignore
+      console.error(error.message);
+      return new wcf.Response({ status: -99 });
+    }
   }
 
   /** 是否已经登录 */
@@ -316,7 +322,7 @@ export class Wcferry {
   /** 获取群聊列表 */
   getChatRooms(): Contact[] {
     const contacts = this.getContacts();
-    return contacts.filter((c) => c.wxid.endsWith('@chatroom'));
+    return contacts.filter((c) => c.wxid.endsWith("@chatroom"));
   }
 
   /**
@@ -325,7 +331,7 @@ export class Wcferry {
    */
   getFriends() {
     const contacts = this.getContacts();
-    return contacts.filter((c) => !c.wxid.endsWith('@chatroom') && !c.wxid.startsWith('gh_') && !Object.hasOwn(this.NotFriend, c.wxid));
+    return contacts.filter((c) => !c.wxid.endsWith("@chatroom") && !c.wxid.startsWith("gh_") && !Object.hasOwn(this.NotFriend, c.wxid));
   }
 
   /**
@@ -338,16 +344,16 @@ export class Wcferry {
     if (times === 0) {
       return {};
     }
-    const [room] = this.dbSqlQuery('MicroMsg.db', `SELECT RoomData FROM ChatRoom WHERE ChatRoomName = '${roomid}';`);
+    const [room] = this.dbSqlQuery("MicroMsg.db", `SELECT RoomData FROM ChatRoom WHERE ChatRoomName = '${roomid}';`);
     if (!room) {
       await sleep();
       return this.getChatRoomMembers(roomid, times - 1) ?? {};
     }
-    const r = wcf.RoomData.deserialize(room['RoomData'] as Buffer);
+    const r = wcf.RoomData.deserialize(room["RoomData"] as Buffer);
 
-    const userRds = this.dbSqlQuery('MicroMsg.db', 'SELECT UserName, NickName FROM Contact;');
+    const userRds = this.dbSqlQuery("MicroMsg.db", "SELECT UserName, NickName FROM Contact;");
 
-    const userDict = Object.fromEntries(userRds.map((u) => [u['UserName'], u['NickName']] as const));
+    const userDict = Object.fromEntries(userRds.map((u) => [u["UserName"], u["NickName"]] as const));
 
     return Object.fromEntries(r.members.map((member) => [member.wxid, member.name || userDict[member.wxid]]));
   }
@@ -359,11 +365,11 @@ export class Wcferry {
    * @returns 群名片
    */
   getAliasInChatRoom(wxid: string, roomid: string): string | undefined {
-    const [room] = this.dbSqlQuery('MicroMsg.db', `SELECT RoomData FROM ChatRoom WHERE ChatRoomName = '${roomid}';`);
+    const [room] = this.dbSqlQuery("MicroMsg.db", `SELECT RoomData FROM ChatRoom WHERE ChatRoomName = '${roomid}';`);
     if (!room) {
       return undefined;
     }
-    const roomData = wcf.RoomData.deserialize(room['RoomData'] as Buffer);
+    const roomData = wcf.RoomData.deserialize(room["RoomData"] as Buffer);
     return roomData.members.find((m) => m.wxid === wxid)?.name || this.getNickName(wxid)?.[0];
   }
 
@@ -372,8 +378,8 @@ export class Wcferry {
    * @param wxids wxids
    */
   getNickName(...wxids: string[]): Array<string | undefined> {
-    const rows = this.dbSqlQuery('MicroMsg.db', `SELECT NickName FROM Contact WHERE UserName in (${wxids.map((id) => `'${id}'`).join(',')});`);
-    return rows.map((row) => row['NickName'] as string | undefined);
+    const rows = this.dbSqlQuery("MicroMsg.db", `SELECT NickName FROM Contact WHERE UserName in (${wxids.map((id) => `'${id}'`).join(",")});`);
+    return rows.map((row) => row["NickName"] as string | undefined);
   }
 
   /**
@@ -387,7 +393,7 @@ export class Wcferry {
       func: wcf.Functions.FUNC_INV_ROOM_MEMBERS,
       m: new wcf.MemberMgmt({
         roomid,
-        wxids: wxids.join(',').replaceAll(' ', ''),
+        wxids: wxids.join(",").replaceAll(" ", ""),
       }),
     });
     const rsp = this.sendRequest(req);
@@ -405,7 +411,7 @@ export class Wcferry {
       func: wcf.Functions.FUNC_ADD_ROOM_MEMBERS,
       m: new wcf.MemberMgmt({
         roomid,
-        wxids: wxids.join(',').replaceAll(' ', ''),
+        wxids: wxids.join(",").replaceAll(" ", ""),
       }),
     });
     const rsp = this.sendRequest(req);
@@ -423,7 +429,7 @@ export class Wcferry {
       func: wcf.Functions.FUNC_DEL_ROOM_MEMBERS,
       m: new wcf.MemberMgmt({
         roomid,
-        wxids: wxids.join(',').replaceAll(' ', ''),
+        wxids: wxids.join(",").replaceAll(" ", ""),
       }),
     });
     const rsp = this.sendRequest(req);
@@ -492,7 +498,7 @@ export class Wcferry {
    * @param receiver 消息接收人，wxid 或者 roomid
    * @returns 0 为成功，其他失败
    */
-  async sendImage(image: string | Buffer | { type: 'Buffer'; data: number[] } | FileSavableInterface, receiver: string): Promise<number> {
+  async sendImage(image: string | Buffer | { type: "Buffer"; data: number[] } | FileSavableInterface, receiver: string): Promise<number> {
     const fileRef = toRef(image);
     const { path, discard } = await fileRef.save(this.options.cacheDir);
     const req = new wcf.Request({
@@ -517,7 +523,7 @@ export class Wcferry {
    * @param receiver 消息接收人，wxid 或者 roomid
    * @returns 0 为成功，其他失败
    */
-  async sendFile(file: string | Buffer | { type: 'Buffer'; data: number[] } | FileSavableInterface, receiver: string): Promise<number> {
+  async sendFile(file: string | Buffer | { type: "Buffer"; data: number[] } | FileSavableInterface, receiver: string): Promise<number> {
     const fileRef = toRef(file);
     const { path, discard } = await fileRef.save(this.options.cacheDir);
     const req = new wcf.Request({
@@ -540,15 +546,17 @@ export class Wcferry {
    * @param receiver xml 类型，如：0x21 为小程序
    * @returns 0 为成功，其他失败
    */
-  sendXML(xml: { content: string; path?: string; type: number }, receiver: string): number {
+  sendXML(xml: { xml: string; path: string; type: number }, receiver: string): number {
+    console.log("发送xml");
+    let params = {
+      receiver,
+      content: xml.xml,
+      type: xml.type,
+      path: xml.path,
+    };
     const req = new wcf.Request({
       func: wcf.Functions.FUNC_SEND_XML,
-      xml: new wcf.XmlMsg({
-        receiver,
-        content: xml.content,
-        type: xml.type,
-        path: xml.path,
-      }),
+      xml: new wcf.XmlMsg(params),
     });
     const rsp = this.sendRequest(req);
     return rsp.status;
@@ -593,7 +601,7 @@ export class Wcferry {
    * @param receiver 接收人, wxid 或者 roomid
    * @returns 0 为成功，其他失败
    */
-  sendRichText(desc: Omit<ReturnType<wcf.RichText['toObject']>, 'receiver'>, receiver: string): number {
+  sendRichText(desc: Omit<ReturnType<wcf.RichText["toObject"]>, "receiver">, receiver: string): number {
     const req = new wcf.Request({
       func: wcf.Functions.FUNC_SEND_RICH_TXT,
       rt: new wcf.RichText({
@@ -646,7 +654,7 @@ export class Wcferry {
       await sleep();
       return this.getAudioMsg(msgid, dir, times - 1);
     }
-    throw new Error('Timeout: get audio msg');
+    throw new Error("Timeout: get audio msg");
   }
 
   /**
@@ -669,7 +677,7 @@ export class Wcferry {
       await sleep();
       return this.getOCRResult(extra, times - 1);
     }
-    throw new Error('Timeout: get ocr result');
+    throw new Error("Timeout: get ocr result");
   }
 
   /**
@@ -679,7 +687,7 @@ export class Wcferry {
    * @param extra 消息中的 extra
    * @returns 0 为成功, 其他失败。
    */
-  downloadAttach(msgid: string, thumb: string = '', extra: string = ''): number {
+  downloadAttach(msgid: string, thumb: string = "", extra: string = ""): number {
     const req = new wcf.Request({
       func: wcf.Functions.FUNC_DOWNLOAD_ATTACH,
       att: new wcf.AttachMsg({
@@ -696,8 +704,8 @@ export class Wcferry {
     extra?: string;
     thumb?: string;
   } {
-    const messages = this.dbSqlQuery('MSG0.db', `Select * from MSG WHERE MsgSvrID = "${msgid}"`);
-    const buf = messages?.[0]?.['BytesExtra'];
+    const messages = this.dbSqlQuery("MSG0.db", `Select * from MSG WHERE MsgSvrID = "${msgid}"`);
+    const buf = messages?.[0]?.["BytesExtra"];
     if (!Buffer.isBuffer(buf)) {
       return {};
     }
@@ -711,8 +719,8 @@ export class Wcferry {
     const thumb = propertyMap[eb.com.iamteer.wcf.Extra.PropertyKey.Thumb];
 
     return {
-      extra: extra ? path.win32.join(this.options.wechat_dir, extra) : '',
-      thumb: thumb ? path.win32.join(this.options.wechat_dir, thumb) : '',
+      extra: extra ? path.win32.join(this.options.wechat_dir, extra) : "",
+      thumb: thumb ? path.win32.join(this.options.wechat_dir, thumb) : "",
     };
   }
 
@@ -745,19 +753,19 @@ export class Wcferry {
   async downloadImage(msgid: string, dir: string, extra?: string, thumb?: string, times = 30): Promise<string> {
     const msgAttachments = extra ? { extra, thumb } : this.getMsgAttachments(msgid);
     if (!msgAttachments.thumb && !msgAttachments.extra) {
-      return Promise.reject('附件信息不存在，如确定ID信息无误，请自行传入extra信息，默认查询MSG0.db,如消息过多MSG表会自增,导致查询无数据');
+      return Promise.reject("附件信息不存在，如确定ID信息无误，请自行传入extra信息，默认查询MSG0.db,如消息过多MSG表会自增,导致查询无数据");
     }
     if (this.downloadAttach(msgid, msgAttachments.thumb, msgAttachments.extra) !== 0) {
-      return Promise.reject('Failed to download attach');
+      return Promise.reject("Failed to download attach");
     }
     for (let cnt = 0; cnt < times; cnt++) {
-      const path = this.decryptImage(msgAttachments.extra || '', dir);
+      const path = this.decryptImage(msgAttachments.extra || "", dir);
       if (path) {
         return path;
       }
       await sleep();
     }
-    return Promise.reject('Failed to decrypt image');
+    return Promise.reject("Failed to decrypt image");
   }
 
   /**
@@ -815,7 +823,7 @@ export class Wcferry {
     });
     const rsp = this.sendRequest(req);
     if (rsp.status !== 0) {
-      console.error('消息注册失败: %d', rsp.status);
+      console.error("消息注册失败: %d", rsp.status);
       this.isMsgReceiving = false;
       return false;
     }
@@ -826,7 +834,7 @@ export class Wcferry {
     } catch (err) {
       this.msgDispose?.();
       this.isMsgReceiving = false;
-      logger('enable message receiving error: %O', err);
+      logger("enable message receiving error: %O", err);
       return false;
     }
   }
@@ -851,27 +859,27 @@ export class Wcferry {
   }
 
   private receiveMessage() {
-    const disposable = Socket.recvMessage(this.createUrl('msg'), null, this.messageCallback.bind(this));
+    const disposable = Socket.recvMessage(this.createUrl("msg"), null, this.messageCallback.bind(this));
     return () => disposable.dispose();
   }
 
   private messageCallback(err: unknown | undefined, buf: Buffer) {
     if (err) {
-      logger('error while receiving message: %O', err);
+      logger("error while receiving message: %O", err);
       return;
     }
     const rsp = wcf.Response.deserialize(buf);
-    this.msgEventSub.emit('wxmsg', new Message(rsp.wxmsg));
+    this.msgEventSub.emit("wxmsg", new Message(rsp.wxmsg));
   }
 
   //  构造xml数据
   private struct_xml_data(xml: string, wx_id: string) {
-    const msgs = this.dbSqlQuery('MSG0.db', `select * from MSG where Type ='49' LIMIT 1`);
-    if (!msgs.length) return console.log('请先发送一条卡片消息 type:49');
-    const xml_info = lz4Compress(Buffer.from(xml)).toString('hex');
+    const msgs = this.dbSqlQuery("MSG0.db", `select * from MSG where Type ='49' LIMIT 1`);
+    if (!msgs.length) return console.log("请先发送一条卡片消息 type:49");
+    const xml_info = lz4Compress(Buffer.from(xml)).toString("hex");
     const MsgSvrID = `10${Date.now()}`;
     const sql = `UPDATE MSG SET MsgSvrID = ${MsgSvrID},CompressContent = x'${xml_info}', BytesExtra=x''  WHERE localId = ${msgs[0].localId}`;
-    this.dbSqlQuery('MSG0.db', sql);
+    this.dbSqlQuery("MSG0.db", sql);
     return this.forwardMsg(MsgSvrID, wx_id);
   }
   /**
@@ -880,15 +888,15 @@ export class Wcferry {
    * @returns 1 为成功，其他失败
    */
   public send_xml_message(content: string, wx_id: string) {
-    const is_xml = typeof content === 'string' && content.trim().startsWith('<');
+    const is_xml = typeof content === "string" && content.trim().startsWith("<");
     if (is_xml) {
       return this.struct_xml_data(content, wx_id);
     }
     if (fs.existsSync(content)) {
-      const xml_info = fs.readFileSync(content, 'utf-8');
+      const xml_info = fs.readFileSync(content, "utf-8");
       return this.struct_xml_data(xml_info, wx_id);
     }
-    console.log('xml or xml_path is not empty');
+    console.log("xml or xml_path is not empty");
   }
 
   /**
@@ -899,24 +907,24 @@ export class Wcferry {
    * @returns 注销监听函数
    */
   listening(callback: (msg: Message) => void): () => void {
-    this.msgEventSub.on('wxmsg', callback);
-    if (this.connected && this.msgEventSub.listenerCount('wxmsg') === 1) {
+    this.msgEventSub.on("wxmsg", callback);
+    if (this.connected && this.msgEventSub.listenerCount("wxmsg") === 1) {
       this.enableMsgReceiving();
     }
     return () => {
-      if (this.connected && this.msgEventSub.listenerCount('wxmsg') === 1) {
+      if (this.connected && this.msgEventSub.listenerCount("wxmsg") === 1) {
         this.disableMsgReceiving();
       }
-      this.msgEventSub.off('wxmsg', callback);
+      this.msgEventSub.off("wxmsg", callback);
     };
   }
 }
 
-function toRef(file: string | Buffer | { type: 'Buffer'; data: number[] } | FileSavableInterface): FileSavableInterface {
-  if (typeof file === 'string' || Buffer.isBuffer(file)) {
+function toRef(file: string | Buffer | { type: "Buffer"; data: number[] } | FileSavableInterface): FileSavableInterface {
+  if (typeof file === "string" || Buffer.isBuffer(file)) {
     return new FileRef(file);
   }
-  if ('save' in file) {
+  if ("save" in file) {
     return file;
   }
   return new FileRef(Buffer.from(file.data));

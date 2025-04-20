@@ -30,7 +30,7 @@ const virutalOptions = computed(() => {
   return {
     count: props.data.length,
     getScrollElement: () => parentRef.value,
-    estimateSize: () => 40,
+    estimateSize: () => 60,
   };
 });
 

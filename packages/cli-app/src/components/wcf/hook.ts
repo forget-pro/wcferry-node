@@ -244,6 +244,7 @@ export function useHook(log: Log) {
         if (res.length == 0) {
           message.info("当前暂无日志，请启动WCF后再查看");
         }
+        console.log(res, 247);
         state.wcflogs = res;
         state.showWcflog = true;
       });

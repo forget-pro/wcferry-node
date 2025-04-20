@@ -63,17 +63,39 @@ export function openWeChat() {
   }
 }
 
-export function parseLog(line: string) {
-  const regex = /^\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] (.*)$/;
-  const match = line.match(regex);
+export function splitLogsByEntry(logText: string): string[] {
+  const lines = logText.split("\n");
+  const entries = [];
+  let current: string[] = [];
 
+  for (const line of lines) {
+    if (line.startsWith("[")) {
+      if (current.length > 0) {
+        entries.push(current.join("\n")); // 拼回 message
+      }
+      current = [line];
+    } else {
+      current.push(line); // 多行 message 的 continuation
+    }
+  }
+  if (current.length > 0) {
+    entries.push(current.join("\n"));
+  }
+  return entries;
+}
+
+export function parseLog(line: string) {
+  const lines = line.split("\n");
+  const firstLine = lines[0];
+  const regex = /^\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] (.*)$/;
+  const match = firstLine.match(regex);
   if (!match) return null;
 
   return {
-    time: match[1], // 时间
-    level: match[2], // 日志等级
-    app: match[3], // 日志应用
-    line: match[4], // 日志位置
-    message: match[5], // 日志消息
+    time: match[1],
+    level: match[2],
+    app: match[3],
+    line: match[4],
+    message: [match[5], ...lines.slice(1)].join("\n").trim(), // 拼接后续 message 行
   };
 }
