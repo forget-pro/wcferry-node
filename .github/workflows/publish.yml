@@ -173,6 +173,7 @@ jobs:
           body: |
             - 🔄 Action自动发布版本 v${{ env.package_version }}
             - 📦 发布了 @dr-forget/wechatcore 到 GitHub Packages
+            - 📦 发布了 @zippybee/wechatcore 到 npm Packages
             - WCF 版本号: ${{ env.latest_release }}
           files: |
             packages/core/dist/*.tgz

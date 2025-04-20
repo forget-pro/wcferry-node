@@ -1,23 +1,52 @@
 import { autoUpdater } from "electron-updater";
 import { dialog, BrowserWindow, app } from "electron";
-import dayjs from "dayjs";
+import { WCF } from "./wcf";
+import axios from "axios";
 
-export class ElectronUpdate {
+export class ElectronUpdate extends WCF {
   private updateInProgress: boolean;
-  private windown: BrowserWindow;
   constructor(win: BrowserWindow) {
+    super(win);
     this.updateInProgress = false;
-    this.windown = win;
   }
-  //   发送日志
-  public sendLog = (message: string, level: "INFO" | "ERROR" | "WARN" | "SUCCESS") => {
-    this.windown.webContents.send("wcf:log", { message, level: level || "INFO", timestamp: dayjs().format("YYYY-MM-DD HH:mm:ss.SSS ") });
+
+  public setUpdatSetFeedUrl = async () => {
+    const tag = await this.getLatestVersion();
+    const proxyurl = this.wcfConfig?.proxy_url ? this.wcfConfig?.proxy_url + "/" : "";
+    if (tag) {
+      const url = `${proxyurl}https://github.com/dr-forget/wcferry-node/releases/download/${tag}`;
+      autoUpdater.setFeedURL({
+        provider: "generic",
+        url,
+      });
+      this.sendLog("设置更新地址成功", "INFO");
+    }
+  };
+
+  // 获取最新的APP版本号
+  public getLatestVersion = async () => {
+    try {
+      const url = `https://api.github.com/repos/dr-forget/wcferry-node/releases`;
+      const res = await axios.get(url, { timeout: 6000 });
+      if (res.status !== 200) {
+        this.sendLog("获取最新版本失败", "ERROR");
+        return null;
+      }
+      const data = res.data;
+      // 获取APP版本号
+      const latestAppVersion = data.filter((item: any) => /^app-v/.test(item.tag_name))[0] || null;
+      return latestAppVersion.tag_name || null;
+    } catch (err: any) {
+      this.sendLog(err.message, "ERROR");
+      return null;
+    }
   };
   // 检查更新
-  public checkUpdate = async () => {
+  public checkElectronUpdate = async () => {
     try {
       if (!app.isPackaged) return 0;
       if (this.updateInProgress) return 2;
+      await this.setUpdatSetFeedUrl();
       this.updateInProgress = true;
       const res = await autoUpdater.checkForUpdates();
       autoUpdater.on("update-not-available", () => {

@@ -48,7 +48,7 @@ function createWindow() {
 
   // Test active push message to Renderer-process.
   win.webContents.on("did-finish-load", () => {
-    electronUpdate?.checkUpdate(); // 检测更新
+    electronUpdate?.checkElectronUpdate(); // 检测更新
 
     // 定时上报内存信息
     startMemoryMonitor(win as BrowserWindow);

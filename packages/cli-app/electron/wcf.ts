@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 const koffi = require("koffi");
 // @ts-ignore
 import cron = require("node-cron");
-interface WCFConfig {
+export interface WCFConfig {
   port: number;
   debug: boolean;
   proxy_url: string;
@@ -24,7 +24,7 @@ interface WCFConfig {
 export class WCF {
   private Wcf_directory: string;
   private wcfconfigPath: string;
-  private wcfConfig: WCFConfig;
+  public wcfConfig: WCFConfig;
   private windown: BrowserWindow;
   private server: FastifyInstance | null;
   private WxInitSDK: Function | null;
