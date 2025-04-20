@@ -528,7 +528,11 @@ export class WCF {
   };
   // 创建托盘图标
   public crateTray = async () => {
-    this.tray = new Tray(path.join(process.env.VITE_PUBLIC, "logo.png"));
+    if (this.tray) {
+      this.tray.destroy();
+      this.tray = null;
+    }
+    this.tray = new Tray(path.join(process.env.VITE_PUBLIC, "macicon.png"));
     this.tray.setToolTip("WCF-TOOL");
     this.tray.on("double-click", () => {
       this.windown?.show();
