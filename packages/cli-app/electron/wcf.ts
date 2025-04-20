@@ -25,7 +25,7 @@ export class WCF {
   private Wcf_directory: string;
   private wcfconfigPath: string;
   public wcfConfig: WCFConfig;
-  private windown: BrowserWindow;
+  public windown: BrowserWindow;
   private server: FastifyInstance | null;
   private WxInitSDK: Function | null;
   private WxDestroySDK: Function | null;

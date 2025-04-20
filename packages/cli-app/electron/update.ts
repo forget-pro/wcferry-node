@@ -51,14 +51,21 @@ export class ElectronUpdate extends WCF {
       if (this.updateInProgress) return 2;
       await this.setUpdatSetFeedUrl();
       this.updateInProgress = true;
-      const res = await autoUpdater.checkForUpdates();
+      const res = await autoUpdater.checkForUpdatesAndNotify();
+      autoUpdater.on("checking-for-update", () => {
+        this.windown?.webContents.send("main-process-message", "🕵️ 正在检查更新...");
+      });
+      autoUpdater.on("update-available", () => {
+        this.updateInProgress = false;
+        this.windown?.webContents.send("main-process-message", "update-available");
+      });
       autoUpdater.on("update-not-available", () => {
         this.updateInProgress = false;
+        this.windown?.webContents.send("main-process-message", "update-not-available");
       });
-
-      autoUpdater.on("error", () => {
-        console.log(666);
+      autoUpdater.on("error", (err) => {
         this.updateInProgress = false;
+        this.windown?.webContents.send("main-process-message", err.message);
       });
 
       autoUpdater.on("update-downloaded", () => {
