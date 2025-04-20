@@ -89,7 +89,7 @@ function createWindow() {
   ipcMain.handle("open:url", (_, url) => {
     shell.openExternal(url); // 打开链接
   });
-  ipcMain.handle("app:update", electronUpdate.checkUpdate);
+  ipcMain.handle("app:update", electronUpdate.checkElectronUpdate);
   //注册快捷键
   globalShortcut.register("CommandOrControl+Shift+I", () => {
     win?.webContents.toggleDevTools();
