@@ -533,6 +533,9 @@ export class WCF {
     this.tray.on("double-click", () => {
       this.windown?.show();
     });
+    this.tray.on("click", () => {
+      this.windown?.show();
+    });
   };
 
   // 更新系统托盘菜单
