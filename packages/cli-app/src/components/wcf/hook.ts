@@ -70,7 +70,6 @@ export function useHook(log: Log) {
       state.memory = data;
     });
     window.ipcRenderer.on("wcf:config", (_, data) => {
-      console.log(data, 66);
       state.wcfConfig = data;
     });
     window.ipcRenderer.on("wcf:startEvent", (_, data) => {
@@ -242,7 +241,6 @@ export function useHook(log: Log) {
     try {
       state.readying = true;
       await window.ipcRenderer.invoke("wcf:readWcfLog").then((res) => {
-        console.log(res, 241);
         if (res.length == 0) {
           message.info("当前暂无日志，请启动WCF后再查看");
         }

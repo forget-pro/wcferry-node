@@ -64,7 +64,7 @@ export function openWeChat() {
 }
 
 export function parseLog(line: string) {
-  const regex = /^\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?::\d+::.*?)\] (.*)$/;
+  const regex = /^\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] (.*)$/;
   const match = line.match(regex);
 
   if (!match) return null;

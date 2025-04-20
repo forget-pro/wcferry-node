@@ -495,18 +495,25 @@ export class WCF {
 
   // 读取wcf日志
   public readWcfLog = () => {
-    const logsPath = path.join(app.getAppPath(), "logs/wcf.txt");
-    if (fs.existsSync(logsPath)) {
-      const logs = fs.readFileSync(logsPath, "utf-8");
-      return logs
-        .split("\n")
-        .reverse()
-        .map((line) => parseLog(line))
-        .filter((item) => item);
+    try {
+      const exePath = app.getPath("exe");
+      const installDir = path.dirname(exePath);
+      const logsPath = path.join(installDir, "logs/wcf.txt");
+      if (fs.existsSync(logsPath)) {
+        const logs = fs.readFileSync(logsPath, "utf-8").trim();
+        return logs
+          .split("\n")
+          .reverse()
+          .map((line) => parseLog(line.trim()));
+      } else {
+        this.sendLog("WCF日志文件不存在", "ERROR");
+        this.sendLog("请先启动WCF后再查看日志", "ERROR");
+      }
+
+      return [];
+    } catch (error) {
+      this.sendLog(`读取WCF日志失败:${(error as Error).message}`, "ERROR");
     }
-    this.sendLog("WCF日志文件不存在", "ERROR");
-    this.sendLog("请先启动WCF后再查看日志", "ERROR");
-    return [];
   };
 
   //清空日志
