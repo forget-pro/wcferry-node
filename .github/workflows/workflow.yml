@@ -1,4 +1,4 @@
-name: Check Upstream Release and Publish
+name: Release and Publish
 
 on:
   workflow_dispatch: # 支持手动触发
