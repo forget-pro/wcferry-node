@@ -57,11 +57,9 @@ function createWindow() {
     });
     wcf?.registerSchedule("0 */12 * * *", async () => {
       const res = await wcf?.checkUpdate(); // 检测更新
-      electronUpdate?.checkUpdate(); // 检测更新
+      await electronUpdate?.checkElectronUpdate(); // 检测更新
       win?.webContents.send("wcf:checkUpdateNotiy", res); // 检测更新
     });
-
-    win?.webContents.send("main-process-message", new Date().toLocaleString());
     wcf?.reportConfig(); // 上报配置文件
   });
 
