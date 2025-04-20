@@ -7,7 +7,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import AdmZip from "adm-zip";
 import { execSync } from "child_process";
-import { PortIsRun } from "./tool";
+import { PortIsRun, parseLog } from "./tool";
 const require = createRequire(import.meta.url);
 const koffi = require("koffi");
 // @ts-ignore
@@ -282,8 +282,7 @@ export class WCF {
     const result = await this.checkWCFIsRun();
     if (result.wcf_run) {
       // 先关闭WCF
-      this.WxDestroySDK?.();
-      this.sendLog("WCF已关闭", "INFO");
+      await this.WxDestroySDK?.();
     }
     // 开始启动
     await this.startWCF();
@@ -298,6 +297,7 @@ export class WCF {
       this.sendLog("WCF未运行", "INFO");
     }
     this.checkWCFIsRun();
+    this.clearWcfLog();
   };
 
   // 修改WCF配置文件
@@ -490,6 +490,30 @@ export class WCF {
       this.sendLog(`✅ 指定版本:${version}对应的${WechatInfo.name}下载完成`, "SUCCESS");
       this.sendLog(`文件已保存:${wechatFilepath}`, "INFO");
       this.sendLog(`安装指定版本微信登录成功后 重新启动WCF即可`, "INFO");
+    }
+  };
+
+  // 读取wcf日志
+  public readWcfLog = () => {
+    const logsPath = path.join(app.getAppPath(), "logs/wcf.txt");
+    if (fs.existsSync(logsPath)) {
+      const logs = fs.readFileSync(logsPath, "utf-8");
+      return logs
+        .split("\n")
+        .reverse()
+        .map((line) => parseLog(line))
+        .filter((item) => item);
+    }
+    this.sendLog("WCF日志文件不存在", "ERROR");
+    this.sendLog("请先启动WCF后再查看日志", "ERROR");
+    return [];
+  };
+
+  //清空日志
+  public clearWcfLog = () => {
+    const logsPath = path.join(app.getAppPath(), "logs/wcf.txt");
+    if (fs.existsSync(logsPath)) {
+      fs.writeFileSync(logsPath, "");
     }
   };
 }

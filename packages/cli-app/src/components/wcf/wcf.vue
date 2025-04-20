@@ -76,11 +76,19 @@
     <div class="bg-white rounded-md mt-2 flex flex-col flex-1">
       <div class="flex items-center justify-between w-full border-b border-gray-200 py-4 px-4">
         <span class="text-sm font-medium">系统日志</span>
-        <button @click="logs.length = 0"
-          class="rounded-sm cursor-pointer text-xs inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200">
-          <i class="fas fa-eraser mr-2"></i>
-          清空日志
-        </button>
+        <div>
+          <button @click="readWcfLog"
+            class="rounded-sm cursor-pointer text-xs inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 mr-2">
+            <i class="fas fa-eraser mr-2"></i>
+            加载WCF日志
+          </button>
+          <button @click="logs.length = 0"
+            class="rounded-sm cursor-pointer text-xs inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200">
+            <i class="fas fa-eraser mr-2"></i>
+            清空日志
+          </button>
+        </div>
+
       </div>
       <div class="bg-gray-100 rounded-md m-4 p-4 text-xs overflow-auto flex-1">
         <virtualizer :data="logs" ref="virtualizerRef">
@@ -180,6 +188,55 @@
 
       </n-drawer-content>
     </n-drawer>
+    <n-drawer v-model:show="state.showWcflog" height="90vh" close-on-esc placement="bottom">
+      <n-drawer-content title="WCF日志" closable>
+        <div class="flex flex-col h-full relative">
+          <div class="bg-gray-100 rounded-md m-4 p-4 text-xs  overflow-auto flex-1">
+            <virtualizer :data="state.wcflogs" ref="virtualizerRef">
+              <template #default="{ item, index }">
+                <div :key="index" class="mb-1 select-text">
+                  <!-- <span class="text-gray-400 mr-2">{{ item }}</span> -->
+                  <span class="text-gray-400 mr-2">[ {{ item.time }} ]</span>
+                  <span :class="{
+                    'text-yellow-600': item.level === 'warning',
+                    'text-gray-600': item.level === 'info',
+                    'text-red-500': item.level == 'error',
+                  }">[ {{ item.level }} ]</span>
+                  <span class="text-12 ml-2 leading-5 break-all" :class="{
+                    'text-yellow-600': item.level === 'warning',
+                    'text-gray-600': item.level === 'info',
+                    'text-red-500': item.level == 'error',
+                  }">[ {{ item.app }} ]</span>
+                  <span class="text-12 ml-2 leading-5 break-all" :class="{
+                    'text-yellow-600': item.level === 'warning',
+                    'text-gray-600': item.level === 'info',
+                    'text-red-500': item.level == 'error',
+                  }">{{ item.line }}</span>
+                  <span class="text-12 ml-2 leading-5 break-all" :class="{
+                    'text-yellow-600': item.level === 'warning',
+                    'text-gray-600': item.level === 'info',
+                    'text-red-500': item.level == 'error',
+                  }">{{ item.message }}</span>
+                </div>
+              </template>
+
+            </virtualizer>
+
+          </div>
+          <transition name="fade" mode="out-in">
+            <div v-if="state.readying"
+              class=" absolute top-0 bottom-0 right-0 left-0 bg-black opacity-50 flex items-center justify-center">
+              <div class="text-center text-white">
+                <loading :size="24" show></loading>
+                <p class="mt-2">读取中...</p>
+              </div>
+            </div>
+          </transition>
+
+        </div>
+      </n-drawer-content>
+    </n-drawer>
+
   </div>
 </template>
 
@@ -189,6 +246,7 @@ import { useDialog } from 'naive-ui';
 import { buttonGrounp, ButtonGroupItem } from './config';
 import { Log } from './log';
 import { useHook } from './hook';
+import loading from '../loading/loading.vue';
 import virtualizer from './virtualizer.vue';
 
 const log = new Log();
@@ -196,7 +254,7 @@ const log = new Log();
 
 const dialog = useDialog()
 
-const { state, logs, registerEvent, injectVersion, saveProxyUrl, debugChange, updateWcf, saveHttpPort, message, unshift, saveWcfPort, appStartCheck, startWcfHttpServer } = useHook(log);
+const { state, logs, readWcfLog, registerEvent, injectVersion, saveProxyUrl, debugChange, updateWcf, saveHttpPort, message, unshift, saveWcfPort, appStartCheck, startWcfHttpServer } = useHook(log);
 
 
 
