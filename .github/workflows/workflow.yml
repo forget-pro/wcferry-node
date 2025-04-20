@@ -51,8 +51,6 @@ jobs:
       - name: Core package build & publish
         run: |
           cd packages/core
-          pnpm run get-wcf
-          pnpm run build-proto
           pnpm version patch
           pnpm version patch 
           git add .
