@@ -18091,47 +18091,52 @@ function requireLimit() {
   })(limit);
   return limit;
 }
-(function(module, exports) {
-  Object.defineProperty(exports, "__esModule", { value: true });
-  const formats_1 = formats;
-  const limit_1 = requireLimit();
-  const codegen_12 = codegen;
-  const fullName = new codegen_12.Name("fullFormats");
-  const fastName = new codegen_12.Name("fastFormats");
-  const formatsPlugin = (ajv2, opts = { keywords: true }) => {
-    if (Array.isArray(opts)) {
-      addFormats(ajv2, opts, formats_1.fullFormats, fullName);
+var hasRequiredDist$1;
+function requireDist$1() {
+  if (hasRequiredDist$1) return dist$2.exports;
+  hasRequiredDist$1 = 1;
+  (function(module, exports) {
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const formats_1 = formats;
+    const limit_1 = requireLimit();
+    const codegen_12 = codegen;
+    const fullName = new codegen_12.Name("fullFormats");
+    const fastName = new codegen_12.Name("fastFormats");
+    const formatsPlugin = (ajv2, opts = { keywords: true }) => {
+      if (Array.isArray(opts)) {
+        addFormats(ajv2, opts, formats_1.fullFormats, fullName);
+        return ajv2;
+      }
+      const [formats3, exportName] = opts.mode === "fast" ? [formats_1.fastFormats, fastName] : [formats_1.fullFormats, fullName];
+      const list = opts.formats || formats_1.formatNames;
+      addFormats(ajv2, list, formats3, exportName);
+      if (opts.keywords)
+        (0, limit_1.default)(ajv2);
       return ajv2;
+    };
+    formatsPlugin.get = (name, mode = "full") => {
+      const formats3 = mode === "fast" ? formats_1.fastFormats : formats_1.fullFormats;
+      const f = formats3[name];
+      if (!f)
+        throw new Error(`Unknown format "${name}"`);
+      return f;
+    };
+    function addFormats(ajv2, list, fs2, exportName) {
+      var _a2;
+      var _b;
+      (_a2 = (_b = ajv2.opts.code).formats) !== null && _a2 !== void 0 ? _a2 : _b.formats = (0, codegen_12._)`require("ajv-formats/dist/formats").${exportName}`;
+      for (const f of list)
+        ajv2.addFormat(f, fs2[f]);
     }
-    const [formats3, exportName] = opts.mode === "fast" ? [formats_1.fastFormats, fastName] : [formats_1.fullFormats, fullName];
-    const list = opts.formats || formats_1.formatNames;
-    addFormats(ajv2, list, formats3, exportName);
-    if (opts.keywords)
-      (0, limit_1.default)(ajv2);
-    return ajv2;
-  };
-  formatsPlugin.get = (name, mode = "full") => {
-    const formats3 = mode === "fast" ? formats_1.fastFormats : formats_1.fullFormats;
-    const f = formats3[name];
-    if (!f)
-      throw new Error(`Unknown format "${name}"`);
-    return f;
-  };
-  function addFormats(ajv2, list, fs2, exportName) {
-    var _a2;
-    var _b;
-    (_a2 = (_b = ajv2.opts.code).formats) !== null && _a2 !== void 0 ? _a2 : _b.formats = (0, codegen_12._)`require("ajv-formats/dist/formats").${exportName}`;
-    for (const f of list)
-      ajv2.addFormat(f, fs2[f]);
-  }
-  module.exports = exports = formatsPlugin;
-  Object.defineProperty(exports, "__esModule", { value: true });
-  exports.default = formatsPlugin;
-})(dist$2, dist$2.exports);
-var distExports$1 = dist$2.exports;
+    module.exports = exports = formatsPlugin;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = formatsPlugin;
+  })(dist$2, dist$2.exports);
+  return dist$2.exports;
+}
 const Ajv$1 = ajvExports;
 const fastUri$1 = fastUriExports;
-const ajvFormats = distExports$1;
+const ajvFormats = requireDist$1();
 const clone$2 = rfdc_1({ proto: true });
 let Validator$1 = class Validator {
   constructor(ajvOptions) {
@@ -22250,7 +22255,7 @@ class ValidatorCompiler {
       }
     }
     if (addFormatPlugin) {
-      distExports$1(this.ajv);
+      requireDist$1()(this.ajv);
     }
     (_a2 = options.onCreate) == null ? void 0 : _a2.call(options, this.ajv);
     const sourceSchemas = Object.values(externalSchemas);
@@ -51162,7 +51167,7 @@ class WCF {
           method: "get",
           url: down_url,
           responseType: "stream",
-          timeout: 500
+          timeout: 12e3
         });
         download.data.pipe(writer);
         return await new Promise((resolve2, reject) => {
@@ -51175,7 +51180,6 @@ class WCF {
       } catch (error2) {
         await writer.close();
         this.sendLog(`下载失败:${error2.message},url:${url2}`, "ERROR");
-        console.log(dest, 154);
         fs$k.unlinkSync(dest);
         return false;
       }
@@ -62945,8 +62949,6 @@ class ElectronUpdate {
   }
 }
 const __dirname$1 = path$n.dirname(fileURLToPath(import.meta.url));
-console.log("app.getVersion()", app.getVersion());
-console.log("app.getAppPath()", app.getAppPath());
 process.env.APP_ROOT = path$n.join(__dirname$1, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 const MAIN_DIST = path$n.join(process.env.APP_ROOT, "dist-electron");

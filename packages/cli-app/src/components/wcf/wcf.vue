@@ -279,7 +279,7 @@ const handleOperation = async (value: ButtonGroupItem) => {
     }
   };
   // @ts-ignore
-  if (!['close', 'setting'].includes(value.key)) {
+  if (!['close', 'setting', 'restart', 'checkUpdate', 'reset'].includes(value.key)) {
     if (state.wcfStarting) {
       unshift(log.warn('WCF正在启动中,请勿重复操作',));
       return message.info('WCF正在启动中,请勿重复操作')
