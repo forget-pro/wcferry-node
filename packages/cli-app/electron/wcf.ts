@@ -29,7 +29,7 @@ export class WCF {
   private server: FastifyInstance | null;
   private WxInitSDK: Function | null;
   private WxDestroySDK: Function | null;
-  private tray: Tray | null = null;
+  public tray: Tray | null = null;
   private scheduleJobs: cron.ScheduledTask[];
   constructor(win: BrowserWindow) {
     this.windown = win;
@@ -532,7 +532,7 @@ export class WCF {
       this.tray.destroy();
       this.tray = null;
     }
-    this.tray = new Tray(path.join(process.env.VITE_PUBLIC, "macicon.png"));
+    this.tray = new Tray(path.join(process.env.VITE_PUBLIC, "iconTemplate.png"));
     this.tray.setToolTip("WCF-TOOL");
     this.tray.on("double-click", () => {
       this.windown?.show();

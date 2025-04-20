@@ -51506,7 +51506,7 @@ class WCF {
         this.tray.destroy();
         this.tray = null;
       }
-      this.tray = new Tray(path$n.join(process.env.VITE_PUBLIC, "macicon.png"));
+      this.tray = new Tray(path$n.join(process.env.VITE_PUBLIC, "iconTemplate.png"));
       this.tray.setToolTip("WCF-TOOL");
       this.tray.on("double-click", () => {
         var _a2;
@@ -63111,6 +63111,7 @@ class ElectronUpdate extends WCF {
     this.updateInProgress = false;
   }
 }
+const isDev = !app.isPackaged;
 const __dirname$1 = path$o.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path$o.join(__dirname$1, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
@@ -63180,6 +63181,7 @@ function createWindow() {
     win == null ? void 0 : win.webContents.toggleDevTools();
   });
   win.on("close", (event) => {
+    if (isDev) return;
     event.preventDefault();
     win == null ? void 0 : win.hide();
   });
@@ -63187,12 +63189,20 @@ function createWindow() {
 const menu = Menu.buildFromTemplate([]);
 Menu.setApplicationMenu(menu);
 app.on("window-all-closed", (event) => {
-  event.preventDefault();
+  if (process.platform == "darwin") {
+    app.quit();
+  } else {
+    event.preventDefault();
+  }
 });
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
+});
+app.on("before-quit", () => {
+  var _a2;
+  (_a2 = wcf == null ? void 0 : wcf.tray) == null ? void 0 : _a2.destroy();
 });
 process.on("uncaughtException", (error2) => {
   win == null ? void 0 : win.webContents.send("unhandledRejection", error2.message);

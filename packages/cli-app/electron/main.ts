@@ -1,9 +1,9 @@
-import { app, BrowserWindow, ipcMain, Menu, shell, Tray, globalShortcut } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, shell, globalShortcut } from "electron";
 import { fileURLToPath } from "node:url";
 import { WCF } from "./wcf";
 import { ElectronUpdate } from "./update";
 import path from "node:path";
-
+const isDev = !app.isPackaged;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // The built directory structure
 //
@@ -95,6 +95,7 @@ function createWindow() {
     win?.webContents.toggleDevTools();
   });
   win.on("close", (event) => {
+    if (isDev) return; // 开发模式下不阻止关闭
     // 阻止关闭，隐藏窗口
     event.preventDefault();
     win?.hide();
@@ -106,7 +107,12 @@ Menu.setApplicationMenu(menu);
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", (event: any) => {
-  event.preventDefault();
+  // On macOS, it is common to keep the application open even when all windows are closed.
+  if (process.platform == "darwin") {
+    app.quit();
+  } else {
+    event.preventDefault();
+  }
 });
 
 app.on("activate", () => {
@@ -115,6 +121,10 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
+});
+
+app.on("before-quit", () => {
+  wcf?.tray?.destroy();
 });
 
 process.on("uncaughtException", (error: any) => {
