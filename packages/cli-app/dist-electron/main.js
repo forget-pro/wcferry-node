@@ -45811,7 +45811,7 @@ function SP() {
     }), Pe == null || Pe.reportConfig();
   }), cm ? (He.loadURL(cm), He == null || He.webContents.toggleDevTools()) : He.loadFile(mn.join(wP, "index.html")), Bt.handle("wcf:checkUpdate", Pe.checkUpdate), Bt.handle("wcf:checkWCF", Pe.checkWCF), Bt.handle("wcf:downloadWCF", Pe.downloadWCF), Bt.handle("wcf:chekWcfIsRun", Pe.checkWCFIsRun), Bt.handle("wcf:startWcfHttpServer", Pe.startWcfServer), Bt.handle("wcf:closeWcfHttpServer", Pe.closeWcfServer), Bt.handle("wcf:updateConfig", Pe.modifyWCFConfig), Bt.handle("wcf:config", Pe.getWCFConfig), Bt.handle("wcf:restartWcf", Pe.restartWCF), Bt.handle("wcf:closeWcf", Pe.closeWCF), Bt.handle("wcf:startWCF", Pe.startWCF), Bt.handle("wcf:resetWcf", Pe.resetWCF), Bt.handle("wcf:readWcfLog", Pe.readWcfLog), Bt.handle("wcf:injectVersionWcf", (e, t) => Pe == null ? void 0 : Pe.injectVersionDll(t.version, t.download_wechat || !1)), Bt.handle("open:url", (e, t) => {
     yC.openExternal(t);
-  }), Bt.handle("app:update", Fn.checkUpdate), vC.register("CommandOrControl+Shift+I", () => {
+  }), Bt.handle("app:update", Fn.checkElectronUpdate), vC.register("CommandOrControl+Shift+I", () => {
     He == null || He.webContents.toggleDevTools();
   }), He.on("close", (e) => {
     GQ || (e.preventDefault(), He == null || He.hide());
