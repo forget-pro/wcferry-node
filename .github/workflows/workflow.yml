@@ -1,0 +1,115 @@
+name: Check Upstream Release and Publish
+
+on:
+  workflow_dispatch: # 支持手动触发
+
+permissions:
+  contents: write # 允许写入代码库内容
+  packages: write # 允许写入包
+  id-token: write # 允许写入 ID 令牌
+jobs:
+  check-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout your repo
+        uses: actions/checkout@v4
+
+      # 6. 设置 Node.js 环境
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # 7. 安装 pnpm
+      - name: Install pnpm globally
+        run: |
+          npm install -g pnpm@8
+          pnpm --version  # 确认 pnpm 安装成功
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pnpm-store
+            packages/**/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      # 8. 安装依赖
+      - name: Install dependencies
+        run: pnpm install
+
+      # 9. 设置 .npmrc 配置以便发布
+      - name: Setup .npmrc for publish
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >  ~/.npmrc
+
+      # 12. 发布 core 包 到 NPM
+      - name: Core package build & publish
+        run: |
+          cd packages/core
+          pnpm run get-wcf
+          pnpm run build-proto
+          pnpm version patch
+          pnpm version patch 
+          git add .
+          pnpm publish --access public --no-git-checks  # 禁用 git 检查，避免 "unclean" 错误
+
+      # 14. 发布 GitHub package
+      - name: Publish GitHub package
+        run: |
+          #清空缓存
+          rm -f ~/.npmrc
+          # 修改作用域为 @dr-forget
+          jq '.name = "@dr-forget/wechatcore"' packages/core/package.json > tmp && mv tmp packages/core/package.json
+          # 创建 .npmrc 用于 GitHub Packages 发布
+          echo "@dr-forget:registry=https://npm.pkg.github.com/" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc 
+          cd packages/core
+          pnpm publish --access restricted --registry=https://npm.pkg.github.com/ --no-git-checks
+          echo "GitHub package published successfully."
+          # 返回根目录（更安全）
+          cd ../..
+          # 恢复原始包名
+          jq '.name = "@zippybee/wechatcore"' packages/core/package.json > tmp && mv tmp packages/core/package.json
+
+        # 15. 提交并推送更新
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"]
+          git add .
+          git commit -m "chore: update version to ${{ env.latest_release }}"  # 提交更新
+          git push
+
+        # 16.获取package.json 版本号
+      - name: Read package version
+        id: package_version
+        run: |
+          PACKAGE_VERSION=$(jq -r .version packages/core/package.json)
+          echo "package_version=$PACKAGE_VERSION" >> $GITHUB_ENV
+
+      # 17. 为提交打标签
+      - name: Tag the commit with release version
+        run: |
+          git tag core-v${{ env.package_version }}  # 为提交添加 release 版本标签
+          git push origin core-v${{ env.package_version }}  # 推送标签到远程
+
+      # 18. 发布 Release
+      - name: Publish Release
+        id: publish_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: core-v${{ env.package_version }}
+          name: core v${{ env.package_version }}
+          body: |
+            - 🔄 发布版本 v${{ env.package_version }}
+            - 📦 发布了 @dr-forget/wechatcore 到 GitHub Packages
+            - 📦 发布了 @zippybee/wechatcore 到 npm Packages
+            - WCF 版本号: ${{ env.latest_release }}
+          files: |
+            packages/core/dist/*.tgz
+            packages/cli/dist/*.tgz
