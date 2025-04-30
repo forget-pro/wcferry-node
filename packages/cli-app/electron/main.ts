@@ -33,7 +33,9 @@ if (!appLock) {
 } else {
   app.on("second-instance", () => {
     if (win) {
-      if (win.isMinimized()) win.restore();
+      if (win.isMinimized() || !win.isVisible) {
+        win.show();
+      }
       win.focus();
     }
   });
