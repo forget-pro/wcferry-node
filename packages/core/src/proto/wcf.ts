@@ -39,7 +39,8 @@ export namespace wcf {
         FUNC_EXEC_OCR = 97,
         FUNC_ADD_ROOM_MEMBERS = 112,
         FUNC_DEL_ROOM_MEMBERS = 113,
-        FUNC_INV_ROOM_MEMBERS = 114
+        FUNC_INV_ROOM_MEMBERS = 114,
+        FUNC_SHUTDOWN = 255
     }
     export class Request extends pb_1.Message {
         #one_of_decls: number[][] = [[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]];
