@@ -5,9 +5,13 @@ import axios from "axios";
 
 export class ElectronUpdate extends WCF {
   private updateInProgress: boolean;
+  private proxyurl: string;
+  private is_download: boolean;
   constructor(win: BrowserWindow) {
     super(win);
     this.updateInProgress = false;
+    this.proxyurl = "";
+    this.is_download = false;
   }
 
   public setUpdatSetFeedUrl = async () => {
@@ -15,6 +19,8 @@ export class ElectronUpdate extends WCF {
     const proxyurl = this.wcfConfig?.proxy_url ? this.wcfConfig?.proxy_url + "/" : "";
     if (tag) {
       const url = `${proxyurl}https://github.com/dr-forget/wcferry-node/releases/download/${tag}`;
+      if (url === this.proxyurl) return; // 如果地址相同则不更新
+      this.proxyurl = url;
       autoUpdater.setFeedURL({
         provider: "generic",
         url,
@@ -49,26 +55,31 @@ export class ElectronUpdate extends WCF {
     try {
       if (!app.isPackaged) return 0;
       if (this.updateInProgress) return 2;
-      await this.setUpdatSetFeedUrl();
+      if (this.is_download) return 3; // 正在下载中
       this.updateInProgress = true;
+      await this.setUpdatSetFeedUrl();
       const res = await autoUpdater.checkForUpdatesAndNotify();
+      this.updateInProgress = false;
       autoUpdater.on("checking-for-update", () => {
         this.windown?.webContents.send("main-process-message", "🕵️ 正在检查更新...");
       });
       autoUpdater.on("update-available", () => {
-        this.updateInProgress = false;
         this.windown?.webContents.send("main-process-message", "update-available");
       });
       autoUpdater.on("update-not-available", () => {
-        this.updateInProgress = false;
         this.windown?.webContents.send("main-process-message", "update-not-available");
       });
+      autoUpdater.on("download-progress", () => {
+        this.is_download = true;
+      });
       autoUpdater.on("error", (err) => {
+        this.is_download = false;
         this.updateInProgress = false;
         this.windown?.webContents.send("main-process-message", err.message);
       });
 
       autoUpdater.on("update-downloaded", () => {
+        this.is_download = false;
         dialog
           .showMessageBox({
             type: "info",
@@ -83,6 +94,7 @@ export class ElectronUpdate extends WCF {
             this.updateInProgress = false;
           });
       });
+
       if (res && res?.updateInfo.version !== app.getVersion()) {
         return 1;
       } else {

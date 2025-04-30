@@ -322,15 +322,13 @@ const handleOperation = async (value: ButtonGroupItem) => {
       unshift(log.warn('资源托管在GitHub请注意网络环境'));
       try {
         const res = await window.ipcRenderer.invoke('app:update');
-        if (res == 0) {
-          unshift(log.success('当前版本已是最新版本'));
-        }
-        if (res == 1) {
-          unshift(log.success('当前版本有更新,即将更新到最新版本'));
-        }
-        if (res == 2) {
-          unshift(log.success('当前正在更新中，请勿重复操作'));
-        }
+        const resultMap = new Map([
+          [0, '当前版本已是最新版本'],
+          [1, '当前版本有更新,即将更新到最新版本'],
+          [2, '当前正在更新中，请勿重复操作'],
+          [3, '新版本正在下载中，请勿重复操作']])
+        const result = resultMap.get(res)
+        result && unshift(log.success(result));
       } catch (e: any) {
         unshift(log.error(`检查更新失败:${e.message}`));
       }
