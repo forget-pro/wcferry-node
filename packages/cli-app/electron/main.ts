@@ -27,11 +27,24 @@ let win: BrowserWindow | null;
 let wcf: WCF | null = null;
 let electronUpdate: ElectronUpdate | null = null;
 
+const appLock = app.requestSingleInstanceLock(); // 单实例锁
+if (!appLock) {
+  app.quit(); // 如果获取锁失败，则退出应用
+} else {
+  app.on("second-instance", () => {
+    if (win) {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    }
+  });
+}
+
 function startMemoryMonitor(win: BrowserWindow) {
   const memoryUsage = process.memoryUsage();
   const totalMB = (memoryUsage.rss / 1024 / 1024).toFixed(1);
   win?.webContents.send("memory-usage", totalMB);
 }
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1200,

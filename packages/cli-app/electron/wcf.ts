@@ -506,7 +506,6 @@ export class WCF {
         const log = fs.readFileSync(logsPath, "utf-8").trim();
         const logs = splitLogsByEntry(log);
         const res = logs.reverse().map((line) => parseLog(line.trim()));
-        console.log(res, 509);
         return res;
       } else {
         this.sendLog("WCF日志文件不存在", "ERROR");
