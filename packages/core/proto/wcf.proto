@@ -36,6 +36,7 @@ enum Functions {
     FUNC_ADD_ROOM_MEMBERS = 0x70;
     FUNC_DEL_ROOM_MEMBERS = 0x71;
     FUNC_INV_ROOM_MEMBERS = 0x72;
+    FUNC_SHUTDOWN         = 0xFF;
 }
 
 message Request
@@ -68,7 +69,7 @@ message Response
     Functions func = 1;
     oneof msg
     {
-        int32 status         = 2;  // Int 状态，通用
+        int32 status         = 2;  // Int 状���，通用
         string str           = 3;  // 字符串
         WxMsg wxmsg          = 4;  // 微信消息
         MsgTypes types       = 5;  // 消息类型
@@ -102,7 +103,7 @@ message WxMsg
 message TextMsg
 {
     string msg      = 1; // 要发送的消息内容
-    string receiver = 2; // 消息接收人，当为��时可@
+    string receiver = 2; // 消息接收人，当为群时可@
     string aters    = 3; // 要@的人列表，逗号分隔
 }
 
