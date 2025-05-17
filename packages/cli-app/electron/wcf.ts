@@ -158,8 +158,27 @@ export class WCF {
     }
   };
 
+  private checkNetWork = async () => {
+    if (!this.wcfConfig.proxy_url) {
+      try {
+        const result = await axios.get("http://demo.ip-api.com/json/?fields=country,query,countryCode&lang=zh-CN");
+        if (result.data.countryCode == "CN") {
+          this.sendLog(`您当前的IP：${result.data.query},归属地为：${result.data.country}、访问GitHub可能受限，下载可能失败，如下载失败，请更换网络重试`, "WARN");
+        } else {
+          this.sendLog(`您当前的IP：${result.data.query},归属地为：${result.data.country}、访问GitHub正常`, "SUCCESS");
+        }
+      } catch (err) {
+        this.sendLog("检测网络环境失败，请自行检测检查当前网络环境是否可正常访问GitHub", "ERROR");
+      }
+    } else {
+      this.sendLog("检测到代理地址，跳过网络检查", "SUCCESS");
+    }
+  };
+
   //   下载最新版的WCF
   public downloadWCF = async () => {
+    await this.checkNetWork();
+    // 先检测环境网络IP环境
     this.sendLog("开始下载最新版本的WCF", "INFO");
     let output: string = "";
     try {
@@ -196,7 +215,6 @@ export class WCF {
         try {
           // @ts-ignore
           zip.extractAllToAsync(dest, true, (err: any) => {
-            console.log(err, 195);
             if (err) reject(err);
             else {
               this.sendLog("✅ 解压文件完成", "SUCCESS");
@@ -454,6 +472,7 @@ export class WCF {
     // 先关闭WCF
     this.closeWCF();
     //检查指定版本是否存在
+    await this.checkNetWork();
     this.sendLog(`开始检测指定版本:${version}是否存在`, "INFO");
     const url = `https://api.github.com/repos/lich0821/WeChatFerry/releases/tags/${version}`;
     const res = await axios.get(url, {
