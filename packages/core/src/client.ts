@@ -906,7 +906,7 @@ export class Wcferry {
    * @param callback 监听函数
    * @returns 注销监听函数
    */
-  listening(callback: (msg: Message) => void): () => void {
+  listening(callback: (msg: Message) => (void | Promise<void>)): () => any {
     this.msgEventSub.on("wxmsg", callback);
     if (this.connected && this.msgEventSub.listenerCount("wxmsg") === 1) {
       this.enableMsgReceiving();
