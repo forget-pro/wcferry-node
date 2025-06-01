@@ -200,7 +200,7 @@ export class Wcferry {
       return wcf.Response.deserialize(buf);
     } catch (error) {
       // @ts-ignore
-      console.error(error.message);
+      console.error(error.message, 203);
       return new wcf.Response({ status: -99 });
     }
   }
@@ -547,7 +547,6 @@ export class Wcferry {
    * @returns 0 为成功，其他失败
    */
   sendXML(xml: { xml: string; path: string; type: number }, receiver: string): number {
-    console.log("发送xml");
     let params = {
       receiver,
       content: xml.xml,
@@ -859,12 +858,18 @@ export class Wcferry {
   }
 
   private receiveMessage() {
-    const disposable = Socket.recvMessage(this.createUrl("msg"), null, this.messageCallback.bind(this));
-    return () => disposable.dispose();
+    try {
+      const disposable = Socket.recvMessage(this.createUrl("msg"), null, this.messageCallback.bind(this));
+      return () => disposable.dispose();
+    } catch (err) {
+      console.log(err, 865)
+    }
+
   }
 
   private messageCallback(err: unknown | undefined, buf: Buffer) {
     if (err) {
+      console.log(err, 867)
       logger("error while receiving message: %O", err);
       return;
     }
