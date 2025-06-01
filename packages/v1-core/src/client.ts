@@ -767,8 +767,13 @@ export class Wcferry {
   }
 
   private receiveMessage() {
-    const disposable = Socket.recvMessage(this.createUrl('msg'), null, this.messageCallback.bind(this));
-    return () => disposable.dispose();
+    try {
+      const disposable = Socket.recvMessage(this.createUrl('msg'), null, this.messageCallback.bind(this));
+      return () => disposable.dispose();
+    } catch (err) {
+      console.log(err, 774)
+    }
+
   }
 
   private messageCallback(err: unknown | undefined, buf: Buffer) {
