@@ -778,6 +778,7 @@ export class Wcferry {
 
   private messageCallback(err: unknown | undefined, buf: Buffer) {
     if (err) {
+      console.log(err, 781, 'nng库抛出错误')
       logger('error while receiving message: %O', err);
       return;
     }
