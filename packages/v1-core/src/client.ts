@@ -43,6 +43,7 @@ export class Wcferry {
   private socket: Socket;
   private readonly msgEventSub = new EventEmitter();
   private options: Required<WcferryOptions>;
+  private MessageRecvDisposable: any;
   constructor(options?: WcferryOptions) {
     this.options = {
       port: options?.port || 10086,
@@ -66,6 +67,11 @@ export class Wcferry {
   get connected() {
     return this.socket.connected();
   }
+
+  get recvMessageConnentd() {
+    return this.MessageRecvDisposable?.connected() ?? false;
+  }
+
   get msgReceiving() {
     return this.isMsgReceiving;
   }
@@ -769,6 +775,7 @@ export class Wcferry {
   private receiveMessage() {
     try {
       const disposable = Socket.recvMessage(this.createUrl('msg'), null, this.messageCallback.bind(this));
+      this.MessageRecvDisposable = disposable;
       return () => disposable.dispose();
     } catch (err) {
       console.log(err, 774)
