@@ -68,14 +68,18 @@ export class Wcferry {
     return this.socket.connected();
   }
 
-  get recvMessageConnentd() {
-    return this.MessageRecvDisposable?.connected() ?? false;
-  }
+
 
   get msgReceiving() {
     return this.isMsgReceiving;
   }
 
+  public recvMessageConnentd() {
+    return {
+      isConnented: this.MessageRecvDisposable?.isConnected() ?? false,
+      isDisposed: this.MessageRecvDisposable?.isDisposed() ?? false,
+    }
+  }
   private createUrl(channel: 'cmd' | 'msg' = 'cmd') {
     const url = `tcp://${this.options.host}:${this.options.port + (channel === 'cmd' ? 0 : 1)}`;
     logger(`wcf ${channel} url: %s`, url);
