@@ -128,10 +128,16 @@ export class Wcferry {
   }
 
   private sendRequest(req: wcf.Request): wcf.Response {
-    const data = req.serialize();
-    const buf = this.socket.send(Buffer.from(data));
-    const res = wcf.Response.deserialize(buf);
-    return res;
+    try {
+      const data = req.serialize();
+      const buf = this.socket.send(Buffer.from(data));
+      const res = wcf.Response.deserialize(buf);
+      return res;
+    } catch (error: any) {
+      console.log(error.message, '发送请求指令失败')
+      throw error;
+    }
+
   }
 
   /** 是否已经登录 */
