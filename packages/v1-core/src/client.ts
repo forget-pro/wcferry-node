@@ -1,4 +1,5 @@
 import { Socket, SocketOptions, lz4Compress } from '@zippybee/nng';
+import { AutoReconnectReceiver } from "./socket-message"
 import { wcf } from './proto/wcf';
 import { EventEmitter } from 'events';
 import { createTmpDir, ensureDirSync, sleep, uint8Array2str, type ToPlainType } from './utils';
@@ -43,7 +44,6 @@ export class Wcferry {
   private socket: Socket;
   private readonly msgEventSub = new EventEmitter();
   private options: Required<WcferryOptions>;
-  private MessageRecvDisposable: any;
   constructor(options?: WcferryOptions) {
     this.options = {
       port: options?.port || 10086,
@@ -60,8 +60,14 @@ export class Wcferry {
     this.socket = new Socket(this.options.socketOptions);
   }
 
-  private trapOnExit() {
-    process.on('exit', () => this.stop());
+  public trapOnExit() {
+    process.on("SIGINT", () => this.stop('SIGINT')) //用户主动终端 例如 Ctrl+C
+    process.on("SIGTERM", () => this.stop('SIGTERM')) // 系统终止信号，例如 kill 命令
+    process.on('SIGHUP', () => this.stop('SIGHUP')) // 终端挂起信号，通常在终端关闭时发送
+    process.on('SIGQUIT', () => this.stop('SIGQUIT')) // 用户发送 quit 信号，通常是 Ctrl+\
+
+    // process.on('uncaughtException', (err) => {
+    // process.on('exit', () => this.stop());
   }
 
   get connected() {
@@ -74,12 +80,6 @@ export class Wcferry {
     return this.isMsgReceiving;
   }
 
-  public recvMessageConnentd() {
-    return {
-      isConnented: this.MessageRecvDisposable?.isConnected() ?? false,
-      isDisposed: this.MessageRecvDisposable?.isDisposed() ?? false,
-    }
-  }
   private createUrl(channel: 'cmd' | 'msg' = 'cmd') {
     const url = `tcp://${this.options.host}:${this.options.port + (channel === 'cmd' ? 0 : 1)}`;
     logger(`wcf ${channel} url: %s`, url);
@@ -111,7 +111,7 @@ export class Wcferry {
   start() {
     try {
       this.socket.connect(this.createUrl());
-      this.trapOnExit();
+      // this.trapOnExit();
       if (this.msgListenerCount > 0) {
         this.enableMsgReceiving();
       }
@@ -121,10 +121,17 @@ export class Wcferry {
     }
   }
 
-  stop() {
-    logger('Closing conneciton...');
-    this.disableMsgReceiving();
-    this.socket.close();
+  async stop(signal: string) {
+    console.log('WCFerry is stopping due to signal:', signal);
+    try {
+      await this.disableMsgReceiving();
+      await this.socket.close();
+      process.exit(0);
+    } catch (err) {
+      console.log(err, '关闭连接失败')
+      process.exit(1)
+    }
+
   }
 
   private sendRequest(req: wcf.Request): wcf.Response {
@@ -784,21 +791,18 @@ export class Wcferry {
 
   private receiveMessage() {
     try {
-      const disposable = Socket.recvMessage(this.createUrl('msg'), null, this.messageCallback.bind(this));
-      this.MessageRecvDisposable = disposable;
-      return () => disposable.dispose();
+      const Receiver = new AutoReconnectReceiver(this.createUrl('msg'))
+      Receiver.start(this.messageCallback.bind(this), (err) => {
+        console.log(err, 774, 'nng库抛出错误')
+      });
+      return () => Receiver.stop();
     } catch (err) {
       console.log(err, 774)
     }
 
   }
 
-  private messageCallback(err: unknown | undefined, buf: Buffer) {
-    if (err) {
-      console.log(err, 781, 'nng库抛出错误')
-      logger('error while receiving message: %O', err);
-      return;
-    }
+  private messageCallback(buf: Buffer) {
     const rsp = wcf.Response.deserialize(buf);
     this.msgEventSub.emit('wxmsg', new Message(rsp.wxmsg));
   }
