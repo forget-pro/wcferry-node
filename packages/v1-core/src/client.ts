@@ -44,6 +44,7 @@ export class Wcferry {
   private socket: Socket;
   private readonly msgEventSub = new EventEmitter();
   private options: Required<WcferryOptions>;
+  private Receiver: AutoReconnectReceiver | null = null;
   constructor(options?: WcferryOptions) {
     this.options = {
       port: options?.port || 10086,
@@ -76,8 +77,8 @@ export class Wcferry {
 
 
 
-  get msgReceiving() {
-    return this.isMsgReceiving;
+  public msgReceivingStatus(): boolean {
+    return this.Receiver ? this.Receiver?.isActive() || false : this.isMsgReceiving;
   }
 
   private createUrl(channel: 'cmd' | 'msg' = 'cmd') {
@@ -106,6 +107,11 @@ export class Wcferry {
 
   private get msgListenerCount() {
     return this.msgEventSub.listenerCount('wxmsg');
+  }
+
+  // 检查 receive message 是否连接
+  get isMsgConnected() {
+    return
   }
 
   start() {
@@ -795,6 +801,7 @@ export class Wcferry {
       Receiver.start(this.messageCallback.bind(this), (err) => {
         console.log(err, 774, 'nng库抛出错误')
       });
+      this.Receiver = Receiver;
       return () => Receiver.stop();
     } catch (err) {
       console.log(err, 774)
